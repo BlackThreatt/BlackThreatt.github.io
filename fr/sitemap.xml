@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/categories/</loc>
+    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://blackthreatt.github.io/categories/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="fr"
+                href="https://blackthreatt.github.io/fr/categories/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/ctf_writeups/creation-dun-nouveau-theme/</loc>
+    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://blackthreatt.github.io/ctf_writeups/creating-a-new-theme/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="fr"
+                href="https://blackthreatt.github.io/fr/ctf_writeups/creation-dun-nouveau-theme/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/ctf_writeups/</loc>
+    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://blackthreatt.github.io/ctf_writeups/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="fr"
+                href="https://blackthreatt.github.io/fr/ctf_writeups/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/categories/hugo/</loc>
+    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/</loc>
+    <lastmod>2014-09-28T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://blackthreatt.github.io/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="fr"
+                href="https://blackthreatt.github.io/fr/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/ctf_writeups/debuter-avec-hugo/</loc>
+    <lastmod>2014-04-02T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://blackthreatt.github.io/ctf_writeups/hugoisforlovers/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="fr"
+                href="https://blackthreatt.github.io/fr/ctf_writeups/debuter-avec-hugo/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/categories/go/</loc>
+    <lastmod>2014-04-02T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/ctf_writeups/introduction-aux-modeles-hugo/</loc>
+    <lastmod>2014-04-02T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://blackthreatt.github.io/ctf_writeups/goisforlovers/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="fr"
+                href="https://blackthreatt.github.io/fr/ctf_writeups/introduction-aux-modeles-hugo/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/categories/jekyll/</loc>
+    <lastmod>2014-03-10T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/ctf_writeups/migrer-vers-hugo-depuis-jekyll/</loc>
+    <lastmod>2014-03-10T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://blackthreatt.github.io/ctf_writeups/migrate-from-jekyll/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="fr"
+                href="https://blackthreatt.github.io/fr/ctf_writeups/migrer-vers-hugo-depuis-jekyll/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/series/</loc>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://blackthreatt.github.io/series/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="fr"
+                href="https://blackthreatt.github.io/fr/series/"
+                />
+  </url>
+  
+  <url>
+    <loc>https://blackthreatt.github.io/fr/tags/</loc>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://blackthreatt.github.io/tags/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="fr"
+                href="https://blackthreatt.github.io/fr/tags/"
+                />
+  </url>
+  
+</urlset>
