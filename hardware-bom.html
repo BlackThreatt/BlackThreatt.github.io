@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hardware & Resources | Embedded Training</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .phase-tag { color: var(--accent); }
+  .bom-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  .bom-table th {
+    background: var(--bg3); font-weight: 500; font-size: 11px;
+    text-transform: uppercase; letter-spacing: .05em; color: var(--text3);
+    padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border2);
+  }
+  .bom-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .bom-table tr:last-child td { border-bottom: none; }
+  .bom-table tr:hover td { background: var(--bg3); }
+  .phase-col { font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+  .price-col { font-family: var(--mono); font-size: 12px; color: var(--accent); white-space: nowrap; }
+  .req-badge {
+    display: inline-block; font-size: 10px; padding: 1px 6px;
+    border-radius: 3px; font-family: var(--mono); border: 1px solid;
+  }
+  .req-must { color: var(--red); border-color: var(--red); background: #1a0707; }
+  .req-rec  { color: var(--yellow); border-color: var(--yellow); background: #1a1500; }
+  .req-opt  { color: var(--text3); border-color: var(--border2); background: var(--bg3); }
+  .res-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 10px;
+  }
+  .res-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .res-url { font-family: var(--mono); font-size: 11px; color: var(--blue); margin-bottom: 6px; word-break: break-all; }
+  .res-desc { font-size: 12px; color: var(--text3); line-height: 1.5; }
+  .cat-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+  .cat-btn {
+    padding: 5px 14px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--bg2); color: var(--text3); cursor: pointer;
+    font-family: var(--mono); font-size: 12px; transition: all .15s;
+  }
+  .cat-btn:hover { border-color: var(--border2); color: var(--text2); }
+  .cat-btn.active { border-color: var(--accent); color: var(--accent); background: #071a10; }
+  .cat-panel { display: none; }
+  .cat-panel.active { display: block; }
+  .total-row td { font-weight: 500; color: var(--text); border-top: 1px solid var(--border2); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="index.html">~/embedded-training</a>
+    <span class="sep">/</span>
+    <span class="current">hardware-bom</span>
+  </div>
+  <div class="topnav-right">
+    <a href="index.html" class="active">curriculum</a>
+    <a href="about.html">about</a>
+    <a href="blog.html">blog</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="phase-tag">// reference</div>
+  <h1 class="page-title">Hardware &amp; Resources</h1>
+  <p class="page-subtitle">
+    Full hardware bill of materials with prices, recommended boards,
+    tools, software, free reference materials, and learning resources.
+    All prices approximate — check current listings.
+  </p>
+</div>
+
+<div class="page-main">
+
+  <div class="cat-nav">
+    <button class="cat-btn active" onclick="showCat('bom')">Hardware BOM</button>
+    <button class="cat-btn" onclick="showCat('software')">Software &amp; Tools</button>
+    <button class="cat-btn" onclick="showCat('books')">Books</button>
+    <button class="cat-btn" onclick="showCat('free')">Free References</button>
+    <button class="cat-btn" onclick="showCat('channels')">YouTube / Videos</button>
+  </div>
+
+  <!-- ══════════════════════ BOM -->
+  <div class="cat-panel active" id="cat-bom">
+
+    <div class="slabel">// phase 1 — foundations hardware</div>
+    <table class="bom-table">
+      <thead>
+        <tr><th>Item</th><th>Recommended</th><th>Price (approx)</th><th>Required</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>STM32 dev board</td>
+          <td>Nucleo-F446RE or Nucleo-F411RE</td>
+          <td class="price-col">€14–18</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>F4 family has FPU, plenty of timers, abundant docs. Avoid Blue Pill clones for learning.</td>
+        </tr>
+        <tr>
+          <td>USB-UART adapter</td>
+          <td>CP2102 or FTDI FT232RL</td>
+          <td class="price-col">€3–8</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>For UART CLI and debug logging. The Nucleo ST-Link also has a virtual COM port.</td>
+        </tr>
+        <tr>
+          <td>Logic analyser</td>
+          <td>Saleae Logic 8 (or clone)</td>
+          <td class="price-col">€10–300</td>
+          <td><span class="req-badge req-rec">rec.</span></td>
+          <td>Saleae clone (~€10 on AliExpress) works with Sigrok/PulseView. Genuine Saleae is better but expensive.</td>
+        </tr>
+        <tr>
+          <td>Breadboard + jumper wires</td>
+          <td>Any 830-point breadboard</td>
+          <td class="price-col">€5–10</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>For peripheral test circuits.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="slabel">// phase 2 — rtos hardware (adds to phase 1)</div>
+    <table class="bom-table">
+      <thead>
+        <tr><th>Item</th><th>Recommended</th><th>Price</th><th>Required</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ethernet PHY module</td>
+          <td>LAN8720 module (MII interface)</td>
+          <td class="price-col">€4–8</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>Works with STM32 MAC peripheral. Many Nucleo boards need an adapter; check pinout for your board.</td>
+        </tr>
+        <tr>
+          <td>IMU sensor (simulated data OK)</td>
+          <td>MPU-6050 breakout or LSM6DS3</td>
+          <td class="price-col">€3–6</td>
+          <td><span class="req-badge req-opt">optional</span></td>
+          <td>Simulated sensor data (incrementing counter + noise) is acceptable for Phase 2. Real sensor adds authenticity.</td>
+        </tr>
+        <tr>
+          <td>Temperature sensor</td>
+          <td>DS18B20 (1-Wire) or TMP117</td>
+          <td class="price-col">€2–5</td>
+          <td><span class="req-badge req-opt">optional</span></td>
+          <td>Use STM32 internal temperature sensor (ADC channel 18) to avoid extra hardware in Phase 2.</td>
+        </tr>
+        <tr>
+          <td>Segger J-Link EDU</td>
+          <td>J-Link EDU Mini</td>
+          <td class="price-col">€20</td>
+          <td><span class="req-badge req-rec">rec.</span></td>
+          <td>Required for Segger SystemView tracing in Week 7. The Nucleo's ST-Link does not support SystemView.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="slabel">// phase 3 — motor control hardware (the main investment)</div>
+    <table class="bom-table">
+      <thead>
+        <tr><th>Item</th><th>Recommended</th><th>Price</th><th>Required</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Oscilloscope</td>
+          <td>Rigol DS1054Z (4ch, 50MHz)</td>
+          <td class="price-col">€300–350</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>Non-negotiable for motor control. You cannot tune a PID loop or verify FOC currents without a scope. DS1054Z can be hacked to 100MHz for free.</td>
+        </tr>
+        <tr>
+          <td>Upgraded STM32 board</td>
+          <td>Nucleo-G431RB or Nucleo-G474RE</td>
+          <td class="price-col">€15–18</td>
+          <td><span class="req-badge req-rec">rec.</span></td>
+          <td>G4 series has dedicated motor control timers (HRTIM), better ADC triggering, and dual op-amps for current sensing. Ideal for FOC.</td>
+        </tr>
+        <tr>
+          <td>BLDC gimbal motor</td>
+          <td>BGM4108-130 or similar</td>
+          <td class="price-col">€15–25</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>Low KV (slow), 12V, safe for learning. Never use high-KV drone motors for first FOC experiments.</td>
+        </tr>
+        <tr>
+          <td>Gate driver IC / board</td>
+          <td>DRV8323RS evaluation board or L6234 module</td>
+          <td class="price-col">€8–25</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>DRV8323RS: SPI-configurable, integrated protections, built-in current sense amps. Professional choice. L6234: simpler, cheaper, less protection.</td>
+        </tr>
+        <tr>
+          <td>Incremental encoder</td>
+          <td>600 PPR or 1000 PPR encoder</td>
+          <td class="price-col">€8–15</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>Required for FOC angle estimation. Many gimbal motors have Hall sensors — sufficient for trapezoidal commutation; encoder gives better FOC performance.</td>
+        </tr>
+        <tr>
+          <td>Current sense resistors</td>
+          <td>10–50 mΩ, 1%, 2W shunt resistors</td>
+          <td class="price-col">€2–5</td>
+          <td><span class="req-badge req-opt">optional</span></td>
+          <td>DRV8323RS has built-in current sense amplifiers — no external shunts needed if using that IC.</td>
+        </tr>
+        <tr>
+          <td>CAN transceiver</td>
+          <td>SN65HVD230 (3.3V) breakout</td>
+          <td class="price-col">€2–4</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>ISO 11898 compliant. Two needed for a minimal CAN bus (one node + USB-CAN analyser). Add 120Ω termination at each end.</td>
+        </tr>
+        <tr>
+          <td>USB-CAN analyser</td>
+          <td>PCAN-USB (Peak) or Canable USB</td>
+          <td class="price-col">€20–150</td>
+          <td><span class="req-badge req-rec">rec.</span></td>
+          <td>Canable (~€20) works with python-can and candump. PCAN-USB is the industry standard but expensive. Canable is sufficient for learning.</td>
+        </tr>
+        <tr>
+          <td>12–24V bench power supply</td>
+          <td>Any adjustable DC supply, 3A minimum</td>
+          <td class="price-col">€30–60</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>Current-limiting capability is essential — it protects the motor and gate driver when you make wiring mistakes. Set current limit to 1–2A during initial commissioning.</td>
+        </tr>
+        <tr>
+          <td>Multimeter</td>
+          <td>Any with DC current measurement</td>
+          <td class="price-col">€15–30</td>
+          <td><span class="req-badge req-must">must</span></td>
+          <td>For measuring idle current, verifying supply voltages, debugging wiring.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="slabel">// total hardware cost estimate</div>
+    <table class="bom-table">
+      <tbody>
+        <tr><td>Phase 1 essentials</td><td></td><td class="price-col">~€25–40</td><td></td><td></td></tr>
+        <tr><td>Phase 2 additions</td><td></td><td class="price-col">~€30–50</td><td></td><td></td></tr>
+        <tr><td>Phase 3 additions (without scope)</td><td></td><td class="price-col">~€70–110</td><td></td><td></td></tr>
+        <tr><td>Oscilloscope (Rigol DS1054Z)</td><td></td><td class="price-col">~€300</td><td></td><td></td></tr>
+        <tr class="total-row">
+          <td><strong>Total (with scope)</strong></td><td></td>
+          <td class="price-col"><strong>~€425–500</strong></td><td></td>
+          <td>If you already have a scope, total drops to ~€125–200</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="card card-blue">
+      <div class="item" style="color:var(--blue)"><strong>Budget tip:</strong> If you can't afford a Rigol DS1054Z, a used Rigol DS1052E or similar 2-channel 50MHz scope from eBay (~€80–120) is adequate for Phase 3. Phase 1 and 2 can be completed without a scope — a logic analyser suffices for digital debugging.</div>
+      <div class="item" style="color:var(--blue)"><strong>Where to buy:</strong> Mouser, Farnell, or DigiKey for proper components. AliExpress for cheap modules (gate driver breakout boards, CAN transceivers, encoder modules) — quality varies but acceptable for learning.</div>
+    </div>
+
+  </div><!-- cat-bom -->
+
+  <!-- ══════════════════════ SOFTWARE -->
+  <div class="cat-panel" id="cat-software">
+
+    <div class="slabel">// build tools (free)</div>
+    <table class="bom-table">
+      <thead><tr><th>Tool</th><th>Purpose</th><th>Install</th></tr></thead>
+      <tbody>
+        <tr><td>arm-none-eabi-gcc</td><td>Cross-compiler for ARM Cortex-M</td><td>apt install gcc-arm-none-eabi / ARM developer site</td></tr>
+        <tr><td>CMake 3.20+</td><td>Build system — use instead of IDE project files</td><td>apt install cmake / cmake.org</td></tr>
+        <tr><td>OpenOCD</td><td>Flash and debug over ST-Link/J-Link</td><td>apt install openocd</td></tr>
+        <tr><td>GDB (arm-none-eabi-gdb)</td><td>Command-line debugger</td><td>Included with arm-none-eabi toolchain</td></tr>
+        <tr><td>clangd</td><td>LSP server for code navigation / completion</td><td>apt install clangd — needs compile_commands.json</td></tr>
+        <tr><td>clang-tidy</td><td>Static analysis + MISRA-C checking</td><td>apt install clang-tidy</td></tr>
+        <tr><td>cppcheck</td><td>Additional static analysis, MISRA addon</td><td>apt install cppcheck</td></tr>
+        <tr><td>objdump / nm / size</td><td>Binary analysis — section sizes, symbol inspection</td><td>Included with arm-none-eabi toolchain</td></tr>
+        <tr><td>addr2line</td><td>Convert fault PC address to source file + line</td><td>Included with arm-none-eabi toolchain</td></tr>
+      </tbody>
+    </table>
+
+    <div class="slabel">// testing tools (free)</div>
+    <table class="bom-table">
+      <thead><tr><th>Tool</th><th>Purpose</th><th>Install</th></tr></thead>
+      <tbody>
+        <tr><td>Ceedling</td><td>Test runner for Unity + CMock in C</td><td>gem install ceedling (requires Ruby)</td></tr>
+        <tr><td>Unity</td><td>Unit test framework for C (included with Ceedling)</td><td>ceedling installs it</td></tr>
+        <tr><td>CMock</td><td>Mock generation for hardware HAL (included with Ceedling)</td><td>ceedling installs it</td></tr>
+        <tr><td>gcov / gcovr</td><td>Code coverage measurement</td><td>apt install gcovr — gcc built-in gcov</td></tr>
+        <tr><td>GitHub Actions</td><td>CI pipeline — runs tests on every push</td><td>.github/workflows/ci.yml in repo</td></tr>
+      </tbody>
+    </table>
+
+    <div class="slabel">// analysis and debugging tools</div>
+    <table class="bom-table">
+      <thead><tr><th>Tool</th><th>Purpose</th><th>Install / Cost</th></tr></thead>
+      <tbody>
+        <tr><td>Segger SystemView</td><td>FreeRTOS task timeline profiling</td><td>Free at segger.com/systemview</td></tr>
+        <tr><td>Wireshark</td><td>Ethernet/TCP/UDP packet capture and analysis</td><td>Free at wireshark.org</td></tr>
+        <tr><td>python-can</td><td>CAN bus monitoring and simulation from PC</td><td>pip install python-can</td></tr>
+        <tr><td>PulseView / Sigrok</td><td>Logic analyser software (works with cheap clones)</td><td>Free at sigrok.org</td></tr>
+        <tr><td>pyserial</td><td>UART communication from Python test scripts</td><td>pip install pyserial</td></tr>
+        <tr><td>scipy + matplotlib</td><td>Control system simulation and data plotting</td><td>pip install scipy matplotlib</td></tr>
+        <tr><td>python-control</td><td>Bode plots, stability margins, transfer functions</td><td>pip install control</td></tr>
+      </tbody>
+    </table>
+
+    <div class="slabel">// optional but useful</div>
+    <table class="bom-table">
+      <thead><tr><th>Tool</th><th>Purpose</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr><td>draw.io (diagrams.net)</td><td>Architecture diagrams for README and documentation</td><td>Free (web or desktop)</td></tr>
+        <tr><td>STM32CubeIDE</td><td>Reference for pin/peripheral config — then abandon for CMake</td><td>Free from ST</td></tr>
+        <tr><td>Mermaid.js</td><td>Inline diagrams in GitHub Markdown (state machines, flow)</td><td>Free — built into GitHub</td></tr>
+        <tr><td>OBS Studio</td><td>Screen recording for portfolio demo videos</td><td>Free</td></tr>
+        <tr><td>MATLAB/Simulink Student</td><td>Control system design and simulation (more powerful than scipy)</td><td>~€99/year student licence</td></tr>
+        <tr><td>GNU Octave</td><td>Free MATLAB alternative — runs most MATLAB scripts</td><td>Free at octave.org</td></tr>
+      </tbody>
+    </table>
+
+  </div><!-- cat-software -->
+
+  <!-- ══════════════════════ BOOKS -->
+  <div class="cat-panel" id="cat-books">
+
+    <div class="slabel">// books in the programme (your existing list)</div>
+    <div class="res-card">
+      <div class="res-title">Understanding and Using C Pointers — Richard Reese</div>
+      <div class="res-desc">Phase 1. Finish remaining chapters on function pointers and pointer arithmetic. Strong foundation for all subsequent C work.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">Modern C — Jens Gustedt</div>
+      <div class="res-desc">Phase 1. Type system, memory model, undefined behaviour, modern idioms. Read cover to cover. Do every exercise.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">Embedded Software Design — Jacob Beningo</div>
+      <div class="res-desc">Phase 1. HAL design, layered architecture, state machines, testing. The "professional architecture" book.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">Hands-On RTOS with Microcontrollers — Brian Amos</div>
+      <div class="res-desc">Phase 2. FreeRTOS API from first principles. STM32-based examples. Follow every code example on hardware.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">Embedded and Real-Time Operating Systems — K C Wang</div>
+      <div class="res-desc">Phase 2. RTOS theory: scheduling algorithms, IPC, priority inversion theory, memory management. The "why under the API" book.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">Making Embedded Systems — Elicia White</div>
+      <div class="res-desc">Phase 2. Architecture decisions, hardware/software interface, design for testability. Short and insightful. Read in parallel with Amos.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">Applied Embedded Electronics — Jerry Twomey</div>
+      <div class="res-desc">Phase 3. ADC, PWM generation, signal conditioning, gate drivers, encoder interfacing, current sensing. The hardware companion to Phase 3.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">The Art of Designing Embedded Systems — Jack Ganssle</div>
+      <div class="res-desc">Phase 4. Professional craft: firmware quality, testing philosophy, the real cost of bugs, career development. Read slowly.</div>
+    </div>
+
+    <div class="slabel">// books to add (not in your original list)</div>
+    <div class="res-card" style="border-color:#2a4a6e;background:#0d1826">
+      <div class="res-title" style="color:var(--blue)">Control Systems Engineering — Norman Nise</div>
+      <div class="res-desc">Phase 3. The standard university textbook. Read Ch. 1–5 (modelling, time response), Ch. 8 (root locus), Ch. 9 (PID design), Ch. 10 (Bode plots, stability margins). Skip the rest. Used or older editions are fine and much cheaper.</div>
+    </div>
+    <div class="res-card" style="border-color:#2a4a6e;background:#0d1826">
+      <div class="res-title" style="color:var(--blue)">Embedded Control Systems in C/C++ — Jim Mann</div>
+      <div class="res-desc">Phase 3. Bridges continuous-time control theory to discrete MCU implementation. Discrete PID, z-transform, anti-windup, fixed-point. Reads Nise → Mann → hardware. Essential.</div>
+    </div>
+    <div class="res-card" style="border-color:#2a4a6e;background:#0d1826">
+      <div class="res-title" style="color:var(--blue)">Test-Driven Development for Embedded C — James Grenning</div>
+      <div class="res-desc">Phase 4. The definitive TDD resource for C. Mocking hardware registers, testing without a target, refactoring for testability. If you buy one book in Phase 4, make it this one.</div>
+    </div>
+
+  </div><!-- cat-books -->
+
+  <!-- ══════════════════════ FREE REFERENCES -->
+  <div class="cat-panel" id="cat-free">
+
+    <div class="slabel">// st microelectronics — free application notes</div>
+    <div class="res-card">
+      <div class="res-title">AN4220 — FOC library for STM32</div>
+      <div class="res-url">st.com → search "AN4220"</div>
+      <div class="res-desc">Full FOC implementation in C for STM32. Covers Clarke/Park, SVPWM, current sensing timing, angle estimation. Read alongside your own Week 7–8 implementation.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">AN4013 — STM32 timer overview</div>
+      <div class="res-url">st.com → search "AN4013"</div>
+      <div class="res-desc">All STM32 timer modes, configurations, and use cases. Essential reference for PWM generation, encoder mode, input capture, and ADC trigger setup.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">AN3116 — STM32 ADC modes</div>
+      <div class="res-url">st.com → search "AN3116"</div>
+      <div class="res-desc">ADC regular/injected conversion modes, DMA, multi-ADC synchronous operation, trigger sources. Essential for Phase 3 current sensing setup.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">STM32 Reference Manuals</div>
+      <div class="res-url">st.com → product page → Documentation tab</div>
+      <div class="res-desc">The ground truth for every peripheral. Keep the RM for your target MCU open at all times during Phase 1–3. The register descriptions tell you exactly what every bit does.</div>
+    </div>
+
+    <div class="slabel">// arm / cortex-m documentation</div>
+    <div class="res-card">
+      <div class="res-title">Cortex-M4 Technical Reference Manual</div>
+      <div class="res-url">developer.arm.com/documentation/ddi0439</div>
+      <div class="res-desc">Core architecture: instructions, registers, exception handling, memory model, MPU, FPU. Essential for understanding HardFault decoding (Phase 2 Week 8) and context switching internals.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">ARM Application Note 209 — Using Cortex-M3/M4 Fault Exceptions</div>
+      <div class="res-url">developer.arm.com → search "AN209"</div>
+      <div class="res-desc">Explains CFSR, HFSR, BFAR, MMFAR registers in detail. Gives worked examples of common fault causes and how to decode them. Essential companion to Phase 2 Week 8 fault handler work.</div>
+    </div>
+
+    <div class="slabel">// freertos</div>
+    <div class="res-card">
+      <div class="res-title">FreeRTOS Documentation</div>
+      <div class="res-url">freertos.org/Documentation</div>
+      <div class="res-desc">Full API reference, kernel internals book (free PDF), and worked examples. Read the internals book alongside K C Wang in Phase 2.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">FreeRTOS Source Code</div>
+      <div class="res-url">github.com/FreeRTOS/FreeRTOS-Kernel</div>
+      <div class="res-desc">Read tasks.c, queue.c, list.c, and timers.c. Phase 2 Week 1 exercise: find xReadyTasksLists[] and understand how the scheduler picks the next task. Non-optional.</div>
+    </div>
+
+    <div class="slabel">// lwip</div>
+    <div class="res-card">
+      <div class="res-title">LwIP Documentation</div>
+      <div class="res-url">lwip.fandom.com/wiki/LwIP_Wiki</div>
+      <div class="res-desc">API reference, PBUF memory management, netconn API tutorial. Read the PBUF page carefully before Phase 2 Week 6 — PBUF exhaustion is the most common LwIP bug.</div>
+    </div>
+
+    <div class="slabel">// standards and safety</div>
+    <div class="res-card">
+      <div class="res-title">MISRA-C 2012 Summary (free)</div>
+      <div class="res-url">barr-group.com/code-craft/coding-standard</div>
+      <div class="res-desc">Free MISRA-C 2012 summary and comparison. Good starting point. The full document (~£30) is worth buying if you're serious about automotive work.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">ISO 26262 Overview</div>
+      <div class="res-url">iso.org/standard/68383.html</div>
+      <div class="res-desc">The standard itself is expensive, but many free introductory summaries exist. Search "ISO 26262 ASIL introduction". Understand ASIL A–D, Part 6 software requirements, and how MISRA-C relates to it.</div>
+    </div>
+
+    <div class="slabel">// control theory</div>
+    <div class="res-card">
+      <div class="res-title">Brian Douglas — Control Systems Lectures (YouTube)</div>
+      <div class="res-url">youtube.com/@BrianBDouglas</div>
+      <div class="res-desc">The best free control systems lecture series. Covers PID, Bode plots, root locus, Nyquist in clear visual format. Watch alongside Nise in Phase 3 Weeks 1–5. Start with the PID playlist.</div>
+    </div>
+    <div class="res-card">
+      <div class="res-title">Khan Academy — Laplace Transform</div>
+      <div class="res-url">khanacademy.org → search "Laplace transform"</div>
+      <div class="res-desc">Free Laplace transform review. If your Laplace is rusty at the start of Phase 3, spend half a day here before opening Nise. Essential foundation for everything in Phase 3.</div>
+    </div>
+
+  </div><!-- cat-free -->
+
+  <!-- ══════════════════════ YOUTUBE -->
+  <div class="cat-panel" id="cat-channels">
+
+    <div class="slabel">// essential channels</div>
+
+    <div class="res-card">
+      <div class="res-title">Phil's Lab — STM32 FOC from scratch series</div>
+      <div class="res-url">youtube.com/@PhilsLab</div>
+      <div class="res-desc">The single most relevant YouTube resource for Phase 3. Phil implements FOC step-by-step on STM32 with oscilloscope verification at every stage — exactly the same path as this programme. Watch his FOC playlist during Phase 3 Weeks 7–9.</div>
+    </div>
+
+    <div class="res-card">
+      <div class="res-title">Brian Douglas — Control Systems Lectures</div>
+      <div class="res-url">youtube.com/@BrianBDouglas</div>
+      <div class="res-desc">The clearest free control theory resource. PID intuition, Bode plots, root locus, Nyquist stability — all visualised. Watch the "Understanding PID Control" and "Bode Plots" playlists during Phase 3 Weeks 1–5.</div>
+    </div>
+
+    <div class="res-card">
+      <div class="res-title">Fastbit Embedded Brain Academy — STM32 peripheral deep dives</div>
+      <div class="res-url">youtube.com/@FastbitEmbeddedBrainAcademy</div>
+      <div class="res-desc">Deep STM32 peripheral tutorials: DMA, UART, SPI, I2C, timers. Useful companion for Phase 1–2 hardware work when the reference manual isn't enough.</div>
+    </div>
+
+    <div class="res-card">
+      <div class="res-title">Mitch Davis — FreeRTOS tutorial series</div>
+      <div class="res-url">youtube.com/@MitchDavisTech</div>
+      <div class="res-desc">Practical FreeRTOS on STM32. Good complement to Amos's book for Phase 2. Covers queues, semaphores, software timers with working code examples.</div>
+    </div>
+
+    <div class="res-card">
+      <div class="res-title">Beningo Embedded Group — Architecture and design videos</div>
+      <div class="res-url">youtube.com/@BeningoEmbedded</div>
+      <div class="res-desc">Jacob Beningo's channel. Supplements his book (Phase 1). Covers HAL design, state machines, testing patterns — short, practical videos.</div>
+    </div>
+
+    <div class="res-card">
+      <div class="res-title">GreatScott! — Electronics fundamentals</div>
+      <div class="res-url">youtube.com/@GreatScottLab</div>
+      <div class="res-desc">Clear electronics explanations: MOSFETs, op-amps, filters, power supplies. Useful for Phase 3 hardware concepts (gate drivers, current sensing, bootstrap circuits).</div>
+    </div>
+
+    <div class="slabel">// specific playlists to watch by phase</div>
+    <div class="card">
+      <div class="item"><strong>Phase 1:</strong> Beningo Embedded — HAL design series. Fastbit — STM32 GPIO, UART, DMA tutorials.</div>
+      <div class="item"><strong>Phase 2:</strong> Mitch Davis — FreeRTOS series. Fastbit — STM32 DMA deep dive. Segger — SystemView tutorial (segger.com).</div>
+      <div class="item"><strong>Phase 3 (control theory):</strong> Brian Douglas — entire PID and Bode plot playlists. Essential. Watch before touching hardware.</div>
+      <div class="item"><strong>Phase 3 (FOC implementation):</strong> Phil's Lab — FOC from scratch playlist. Watch Weeks 7–9 of the programme alongside this series.</div>
+      <div class="item"><strong>Phase 4:</strong> Barr Group webinars on MISRA-C and ISO 26262 (barr-group.com — free registration). Beningo — unit testing in embedded C series.</div>
+    </div>
+
+  </div><!-- cat-channels -->
+
+</div><!-- page-main -->
+
+<div class="page-footer">
+  <span>hardware &amp; resources reference</span>
+  <div style="display:flex;gap:20px">
+    <a href="code-reference.html">← code reference</a>
+    <a href="index.html">index →</a>
+  </div>
+</div>
+
+<script>
+function showCat(id) {
+  document.querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('cat-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

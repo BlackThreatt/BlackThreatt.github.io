@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Page Not Found | Embedded Training</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .err-wrap {
+    min-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  .err-code {
+    font-family: var(--mono);
+    font-size: clamp(80px, 15vw, 140px);
+    font-weight: 300;
+    color: var(--border2);
+    line-height: 1;
+    margin-bottom: 8px;
+    letter-spacing: -.04em;
+  }
+  .err-accent {
+    display: block;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--accent);
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .err-title {
+    font-size: clamp(18px, 3vw, 28px);
+    font-weight: 300;
+    color: var(--text);
+    margin-bottom: 12px;
+    letter-spacing: -.02em;
+  }
+  .err-desc {
+    font-size: 14px;
+    color: var(--text3);
+    max-width: 400px;
+    line-height: 1.7;
+    margin-bottom: 36px;
+  }
+  .err-links {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .err-link {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text3);
+    text-decoration: none;
+    padding: 8px 18px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg2);
+    transition: all .15s;
+  }
+  .err-link:hover {
+    border-color: var(--border2);
+    color: var(--text);
+    background: var(--bg3);
+  }
+  .err-link.primary {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: #071a10;
+  }
+  .err-link.primary:hover {
+    background: #0d2618;
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="index.html">~/embedded-training</a>
+  </div>
+  <div class="topnav-right">
+    <a href="index.html">curriculum</a>
+    <a href="about.html">about</a>
+    <a href="blog.html">blog</a>
+  </div>
+</nav>
+
+<div class="err-wrap">
+  <div class="err-code">404</div>
+  <span class="err-accent">// page not found</span>
+  <h1 class="err-title">This page doesn't exist</h1>
+  <p class="err-desc">
+    The address you followed either moved, was never here,
+    or has been eaten by a HardFault with no handler installed.
+  </p>
+  <div class="err-links">
+    <a href="index.html" class="err-link primary">← back to index</a>
+    <a href="phase1.html" class="err-link">phase 1</a>
+    <a href="phase2.html" class="err-link">phase 2</a>
+    <a href="phase3.html" class="err-link">phase 3</a>
+    <a href="phase4.html" class="err-link">phase 4</a>
+    <a href="about.html" class="err-link">about</a>
+  </div>
+</div>
+
+</body>
+</html>

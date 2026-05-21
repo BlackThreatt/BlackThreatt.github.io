@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog | Embedded Training</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .blog-hero {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 48px 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 36px;
+  }
+
+  .blog-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 48px;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 48px;
+    align-items: start;
+  }
+
+  @media (max-width: 800px) {
+    .blog-main { grid-template-columns: 1fr; }
+    .blog-sidebar { display: none; }
+    .blog-hero { padding: 32px 20px 28px; }
+    .blog-main { padding: 28px 20px; }
+  }
+
+  /* ── Post list ── */
+  .post-list { display: flex; flex-direction: column; gap: 0; }
+
+  .post-item {
+    display: block;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    transition: none;
+  }
+
+  .post-item:first-child { padding-top: 0; }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .post-date {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .post-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    color: var(--text3);
+    background: var(--bg3);
+  }
+
+  .post-tag-phase1 { border-color: #1e3a5a; color: var(--blue); background: #0d1826; }
+  .post-tag-phase2 { border-color: #3a1e5a; color: var(--purple); background: #130d26; }
+  .post-tag-phase3 { border-color: #5a2e0e; color: var(--orange); background: #1a0e07; }
+  .post-tag-phase4 { border-color: #1a5c3a; color: var(--accent); background: #071a10; }
+  .post-tag-general { border-color: var(--border2); color: var(--text3); background: var(--bg3); }
+
+  .post-title {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 8px;
+    line-height: 1.3;
+    letter-spacing: -.01em;
+    transition: color .15s;
+  }
+
+  .post-item:hover .post-title { color: var(--accent); }
+
+  .post-excerpt {
+    font-size: 13px;
+    color: var(--text3);
+    line-height: 1.65;
+    max-width: 580px;
+    margin-bottom: 12px;
+  }
+
+  .post-readmore {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    transition: color .15s;
+  }
+
+  .post-item:hover .post-readmore { color: var(--accent); }
+
+  /* ── Placeholder post (draft) ── */
+  .post-item-draft {
+    opacity: .45;
+    pointer-events: none;
+  }
+
+  .draft-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--border2);
+    color: var(--text3);
+    background: var(--bg3);
+  }
+
+  /* ── Sidebar ── */
+  .blog-sidebar { position: sticky; top: 72px; }
+
+  .sidebar-section { margin-bottom: 28px; }
+
+  .sidebar-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text3);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .tag-link {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--text3);
+    text-decoration: none;
+    background: var(--bg2);
+    transition: all .15s;
+  }
+
+  .tag-link:hover { border-color: var(--border2); color: var(--text2); }
+
+  .archive-list { list-style: none; }
+
+  .archive-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .archive-item:last-child { border-bottom: none; }
+
+  .archive-link {
+    color: var(--text3);
+    text-decoration: none;
+    transition: color .15s;
+  }
+
+  .archive-link:hover { color: var(--text2); }
+
+  .archive-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--border2);
+  }
+
+  .rss-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    text-decoration: none;
+    transition: color .15s;
+  }
+
+  .rss-link:hover { color: var(--text2); }
+
+  .write-note {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 12px;
+    color: var(--text3);
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .write-note a { color: var(--accent); text-decoration: none; }
+  .write-note a:hover { text-decoration: underline; }
+
+  .empty-state {
+    padding: 48px 0;
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+    line-height: 1.7;
+    display: none; /* shown via JS when no posts */
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="index.html">~/embedded-training</a>
+    <span class="sep">/</span>
+    <span class="current">blog</span>
+  </div>
+  <div class="topnav-right">
+    <a href="index.html">curriculum</a>
+    <a href="about.html">about</a>
+    <a href="blog.html" class="active">blog</a>
+  </div>
+</nav>
+
+<div class="blog-hero">
+  <div class="phase-tag" style="color:var(--accent);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px">// writing</div>
+  <h1 class="page-title">Blog</h1>
+  <p class="page-subtitle" style="margin-bottom:0">
+    Technical notes from the self-training programme: implementation deep-dives,
+    bugs worth remembering, and concepts that clicked only after getting them wrong first.
+  </p>
+</div>
+
+<div class="blog-main">
+
+  <!-- ══ POST LIST ══════════════════════════════════════════ -->
+  <section>
+
+    <div class="write-note">
+      Posts are added as I complete each phase. Each new post will be shared on my LinkedIn profile.      Follow along on <a href="https://github.com/yourusername" target="_blank" rel="noopener">GitHub</a>
+
+    </div>
+
+    <div class="post-list">
+
+
+    </div><!-- post-list -->
+
+  </section>
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════ -->
+  <aside class="blog-sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">// topics</div>
+      <div class="tag-cloud">
+        <span class="tag-link">Embedded C</span>
+        <span class="tag-link">FreeRTOS</span>
+        <span class="tag-link">motor control</span>
+        <span class="tag-link">FOC</span>
+        <span class="tag-link">PID</span>
+        <span class="tag-link">control theory</span>
+        <span class="tag-link">MISRA-C</span>
+        <span class="tag-link">STM32</span>
+        <span class="tag-link">DMA</span>
+        <span class="tag-link">unit testing</span>
+        <span class="tag-link">debugging</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">// by phase</div>
+      <ul class="archive-list">
+        <li class="archive-item">
+          <a href="phase1.html" class="archive-link">Phase 1 — Foundations</a>
+          <span class="archive-count">0 posts</span>
+        </li>
+        <li class="archive-item">
+          <a href="phase2.html" class="archive-link">Phase 2 — RTOS</a>
+          <span class="archive-count">0 posts</span>
+        </li>
+        <li class="archive-item">
+          <a href="phase3.html" class="archive-link">Phase 3 — Motor Control</a>
+          <span class="archive-count">0 posts</span>
+        </li>
+        <li class="archive-item">
+          <a href="phase4.html" class="archive-link">Phase 4 — Professional</a>
+          <span class="archive-count">0 posts</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">// curriculum</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <a href="index.html" style="font-size:13px;color:var(--text3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--text2)'" onmouseout="this.style.color='var(--text3)'">Full curriculum overview →</a>
+        <a href="hardware-bom.html" style="font-size:13px;color:var(--text3);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--text2)'" onmouseout="this.style.color='var(--text3)'">Hardware BOM →</a>
+      </div>
+    </div>
+
+  </aside>
+
+</div><!-- blog-main -->
+
+<div class="page-footer">
+  <span>blog</span>
+  <div style="display:flex;gap:20px">
+    <a href="about.html">about</a>
+    <a href="index.html">curriculum</a>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 4 — Professional Readiness | Embedded Training</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .phase-tag { color: var(--accent); }
+  .week-title { color: var(--accent); }
+  .prog-fill { background: var(--accent); }
+  .badge-phase { color: var(--accent); border-color: #1a5c3a; background: #071a10; }
+  .ms-dot-phase { background: var(--accent); }
+  .wtab.active { border-color: var(--accent); color: var(--accent); }
+  .day { border-color: #1a5c3a; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="index.html">~/embedded-training</a>
+    <span class="sep">/</span>
+    <span class="current">phase-4</span>
+  </div>
+  <div class="topnav-right">
+    <a href="index.html" class="active">curriculum</a>
+    <a href="about.html">about</a>
+    <a href="blog.html">blog</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="phase-tag">// phase 04 of 04</div>
+  <h1 class="page-title">Professional readiness</h1>
+  <p class="page-subtitle">
+    MISRA-C 2012 compliance, Ceedling+Unity+CMock test suites, GitHub Actions CI pipeline,
+    portfolio documentation, and deep interview preparation. The phase that converts
+    skills into job offers.
+  </p>
+  <div class="meta-row">
+    <span class="meta-item"><strong>Duration:</strong> 5 weeks</span>
+    <span class="meta-item"><strong>Hours:</strong> ~200 hrs (40/week)</span>
+    <span class="meta-item"><strong>Schedule:</strong> Mon–Sat full time</span>
+    <span class="meta-item"><strong>Output:</strong> 3 polished portfolio projects + job applications</span>
+  </div>
+</div>
+
+<div class="page-main">
+
+  <div class="slabel">// books and resources for this phase</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="item"><strong>The Art of Designing Embedded Systems</strong> — Jack Ganssle<span class="isub">Professional craft: firmware quality, the cost of bugs, testing philosophy, career development. Read slowly. Disagree where you disagree.</span></div>
+    <div class="item"><strong>MISRA-C 2012 Guidelines</strong> — MISRA Consortium<span class="isub">~£30 at misra.org.uk. Worth buying for automotive. Free summary available at barr-group.com/code-craft/coding-standard</span></div>
+    <div class="item"><strong>Test-Driven Development for Embedded C</strong> — James Grenning (recommended addition)<span class="isub">The definitive TDD resource for embedded C. If you buy one book in Phase 4, make it this one.</span></div>
+  </div>
+
+  <div class="slabel">// daily schedule template</div>
+  <div class="card" style="margin-bottom:24px">
+    <div class="item">08:00 – 10:00 &nbsp;Ganssle reading + reflection<span class="isub">This book is about wisdom, not syntax. Read slowly. Write down what surprises you and what you disagree with.</span></div>
+    <div class="item">10:00 – 12:00 &nbsp;MISRA-C compliance pass on Phase 1–3 code<span class="isub">Apply one rule category per day. Work through projects systematically.</span></div>
+    <div class="item">13:00 – 15:00 &nbsp;Interview preparation: practice answers out loud, live coding exercises<span class="isub">Speaking answers out loud is different from knowing them in your head. Both matter.</span></div>
+    <div class="item">15:00 – 17:00 &nbsp;Portfolio and documentation polish<span class="isub">Every repo needs: README with architecture diagram, CI badge, scope traces, build instructions.</span></div>
+    <div class="item">Saturday &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mock technical interview: record yourself answering questions, or practice with a friend</div>
+  </div>
+
+  <div class="week-tabs">
+    <button class="wtab active" onclick="showWeek(0)">Week 1</button>
+    <button class="wtab" onclick="showWeek(1)">Week 2</button>
+    <button class="wtab" onclick="showWeek(2)">Week 3</button>
+    <button class="wtab" onclick="showWeek(3)">Week 4</button>
+    <button class="wtab" onclick="showWeek(4)">Week 5</button>
+  </div>
+
+  <!-- W1 -->
+  <div class="week-panel active" id="w0">
+    <div class="week-header">
+      <h2 class="week-title">Week 1 — Professional craft and MISRA-C compliance</h2>
+      <span class="badge badge-phase">Standards</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:20%"></div></div>
+    <div class="alert" style="border-color:var(--accent);background:#071a10;margin-bottom:12px">
+      <div class="alert-title" style="color:var(--accent)">Why MISRA-C matters for automotive hiring</div>
+      MISRA-C 2012 is mandatory in ISO 26262 (automotive functional safety) and IEC 61508.
+      Most automotive embedded job descriptions list it explicitly. You don't need every rule
+      memorised — you need to understand the rationale, have applied it to real code, and be
+      able to discuss specific rules with examples. "I ran clang-tidy with MISRA checks on my
+      FOC motor controller and resolved all mandatory violations" is a concrete differentiator.
+    </div>
+    <div class="chips">
+      <span class="chip">Mandatory rules</span><span class="chip">Required rules</span>
+      <span class="chip">Advisory rules</span><span class="chip">deviation records</span>
+      <span class="chip">clang-tidy</span><span class="chip">cppcheck</span><span class="chip">static analysis</span>
+    </div>
+    <div class="slabel">Rule category structure</div>
+    <div class="card">
+      <div class="item"><span style="color:var(--red);font-weight:500">Mandatory (16 rules):</span> Must never be violated. No deviation permitted under any circumstances.<span class="isub">Examples: no undefined behaviour, no unreachable code, memory not accessed out of bounds</span></div>
+      <div class="item"><span style="color:var(--yellow);font-weight:500">Required (~100 rules):</span> Must comply unless a formal written deviation is documented with justification.<span class="isub">Examples: all switch statements have a default clause, no implicit conversions that lose precision</span></div>
+      <div class="item"><span style="color:var(--text2);font-weight:500">Advisory (~50 rules):</span> Best practice. Informal deviation acceptable.<span class="isub">Examples: prefer named constants over literals, limit function complexity</span></div>
+    </div>
+    <div class="slabel">High-value rules to understand deeply — these come up in interviews</div>
+    <div class="card">
+      <div class="item"><strong>Rule 10.1–10.8:</strong> essential type model — no implicit conversions that change sign or lose precision<span class="isub">Why it matters: silent truncation causes a large proportion of embedded integer bugs. Know 2–3 examples.</span></div>
+      <div class="item"><strong>Rule 14.3:</strong> no invariant boolean conditions (dead code)<span class="isub">Compiler warnings miss these. Static analysis finds them. Dead conditions = logic bugs or unreachable error handling.</span></div>
+      <div class="item"><strong>Rule 15.5:</strong> only one return statement per function<span class="isub">Why: multiple returns complicate coverage analysis and can bypass cleanup code. Controversial but defensible.</span></div>
+      <div class="item"><strong>Rule 17.2:</strong> no recursive functions<span class="isub">Why: stack depth becomes unbounded. In safety-critical systems, stack overflow must be provably impossible.</span></div>
+      <div class="item"><strong>Rule 21.3:</strong> no dynamic memory allocation (malloc/free) after initialisation<span class="isub">Why: fragmentation and non-deterministic time. You already did this in Phase 2 (static FreeRTOS allocation).</span></div>
+      <div class="item"><strong>Dir 4.1:</strong> no runtime errors — no UB, overflow, divide-by-zero in any reachable path<span class="isub">The most fundamental safety requirement. Your code must be provably free of UB in all reachable paths.</span></div>
+    </div>
+    <div class="slabel">clang-tidy + cppcheck MISRA setup</div>
+<pre>
+# Install
+sudo apt install clang-tidy cppcheck
+pip install cppcheck  # or use system package
+
+# cppcheck with MISRA addon — download misra.py from cppcheck GitHub
+cppcheck --addon=misra.py \
+         --suppress=misra-c2012-2.3 \
+         --enable=all \
+         src/
+
+# clang-tidy with safety-oriented checks
+clang-tidy src/*.c -- -I include/ -DSTM32F4xx \
+  -checks='cert-*,hicpp-*,readability-*,bugprone-*,misc-*'
+
+# Process:
+# 1. Fix ALL mandatory violations first — no exceptions, no "I'll come back to it"
+# 2. Required violations: document each with a deviation record comment:
+#
+#    /* MISRA-C 2012 Rule 11.3 deviation:
+#       Cast required for memory-mapped hardware register access.
+#       Register address is fixed at link time — no type confusion possible.
+#       Reviewed by: [name]. Risk: None. */
+#    volatile uint32_t *reg = (volatile uint32_t *)UART_BASE_ADDR;
+#
+# 3. Advisory: fix high-value ones, document the rest in a deviation log
+</pre>
+    <div class="slabel">Daily schedule — Week 1</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Ganssle Ch. 1–3. Set up clang-tidy on Phase 1 project. Run it. Count violations by category. Don't start fixing yet — audit first.</div>
+      <div class="item"><span class="day">Tue</span>Fix all mandatory violations in Phase 1. For each: understand why it's mandatory before changing the code.</div>
+      <div class="item"><span class="day">Wed</span>Fix mandatory violations in Phase 2 (RTOS project). ISR-related type casts will appear — document as formal deviations.</div>
+      <div class="item"><span class="day">Thu</span>Fix mandatory violations in Phase 3 (motor controller). Q15 fixed-point code will have intentional casts — document them clearly.</div>
+      <div class="item"><span class="day">Fri</span>Ganssle Ch. 4–5. Write a deviation record document covering your top 5 required violations across all projects. Format: rule number, file/line, justification, risk, reviewer.</div>
+      <div class="item"><span class="day">Sat</span>Commit all MISRA changes. Tag: "misra-compliance-pass-1". Add a MISRA compliance section to each project README.</div>
+    </div>
+  </div>
+
+  <!-- W2 -->
+  <div class="week-panel" id="w1">
+    <div class="week-header">
+      <h2 class="week-title">Week 2 — Testing depth: coverage, CI pipeline</h2>
+      <span class="badge badge-phase">Testing</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:40%"></div></div>
+    <div class="alert" style="border-color:var(--accent);background:#071a10;margin-bottom:12px">
+      <div class="alert-title" style="color:var(--accent)">Testing is the biggest differentiator in automotive embedded hiring</div>
+      Most embedded developers test by running on hardware. Automotive teams test at multiple
+      levels with measurable coverage targets, automated on every commit.
+      Your GitHub CI badge is visible before the first interview conversation starts.
+    </div>
+    <div class="chips">
+      <span class="chip">unit testing</span><span class="chip">test doubles</span>
+      <span class="chip">mocking hardware</span><span class="chip">branch coverage</span>
+      <span class="chip">MC/DC coverage</span><span class="chip">Ceedling</span>
+      <span class="chip">CMock</span><span class="chip">GitHub Actions</span>
+    </div>
+    <div class="slabel">Reading</div>
+    <div class="card">
+      <div class="item">Ganssle Ch. 6–9: debugging strategies, design for testability<span class="isub">Key Ganssle quote to internalise: "The most important design decision is how you will test it."</span></div>
+      <div class="item">Grenning — TDD for Embedded C: Chapter on testing hardware-dependent code with test doubles<span class="isub">The mocking pattern for hardware registers is the core technique of this week</span></div>
+    </div>
+    <div class="slabel">What to test in each project</div>
+    <div class="card">
+      <div class="item"><strong>Phase 1 (CLI):</strong> ring buffer (all edge cases, wrap-around), FSM (every state/event cell), memory pool (alloc/free/exhaustion), command parser (valid + malformed inputs)<span class="isub">Target: 95%+ branch coverage. Pure algorithmic — no hardware dependencies.</span></div>
+      <div class="item"><strong>Phase 2 (sensor fusion):</strong> aggregator logic, watchdog token detection, packet framing/parsing, queue overflow handling<span class="isub">Mock FreeRTOS queue API with CMock. Test task logic without the scheduler.</span></div>
+      <div class="item"><strong>Phase 3 (motor controller):</strong> PID (anti-windup, clamping, derivative kick), Clarke/Park (against known test vectors), fault state machine (all transitions), thermal derating, CAN frame pack/unpack<span class="isub">Clarke/Park tests catch sign errors before they cause mysterious hardware behaviour.</span></div>
+    </div>
+    <div class="slabel">Unity test examples — Phase 3 transforms and fault SM</div>
+<pre>
+/* test/test_foc_transforms.c */
+#include "unity.h"
+#include "foc.h"
+
+void test_Clarke_BalancedThreePhase_GivesCorrectAlphaBeta(void) {
+    float Ialpha, Ibeta;
+    Clarke(1.0f, -0.5f, -0.5f, &amp;Ialpha, &amp;Ibeta);
+    TEST_ASSERT_FLOAT_WITHIN(0.001f,  1.0f, Ialpha);
+    TEST_ASSERT_FLOAT_WITHIN(0.001f,  0.0f, Ibeta);
+}
+
+void test_Park_InvPark_Roundtrip(void) {
+    float theta = 1.234f;
+    float Ialpha_in = 3.0f, Ibeta_in = -2.0f;
+    float Id, Iq, Ialpha_out, Ibeta_out;
+    Park(Ialpha_in, Ibeta_in, theta, &amp;Id, &amp;Iq);
+    InvPark(Id, Iq, theta, &amp;Ialpha_out, &amp;Ibeta_out);
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, Ialpha_in, Ialpha_out);
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, Ibeta_in,  Ibeta_out);
+}
+
+void test_FaultSM_OvertempTransition_DisablesPWM(void) {
+    FOC_Init();
+    FOC_SetState(MSTATE_RUNNING);
+    FOC_InjectFault(FAULT_OVERTEMP);
+    FOC_Update();
+    TEST_ASSERT_EQUAL(MSTATE_FAULT_LATCH, FOC_GetState());
+    TEST_ASSERT_EQUAL(0, Mock_TIM1_GetMOE());  /* MOE bit must be cleared */
+}
+
+void test_PID_AntiWindup_NoIntegrationWhenSaturated(void) {
+    PID_t pid;
+    PID_Init(&amp;pid, 0.0f, 100.0f, 0.0f, 0.001f, 10.0f, -10.0f, 10.0f);
+    for (int i = 0; i &lt; 100; i++) PID_Update(&amp;pid, 100.0f, 0.0f); /* saturate */
+    float out = PID_Update(&amp;pid, 0.0f, 0.0f);                       /* remove error */
+    TEST_ASSERT_FLOAT_WITHIN(1.0f, 0.0f, out);   /* must recover quickly */
+}
+</pre>
+    <div class="slabel">GitHub Actions CI pipeline</div>
+<pre>
+# .github/workflows/ci.yml
+name: Embedded Unit Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ruby + Ceedling
+        run: |
+          sudo apt-get install -y ruby gcc gcovr
+          gem install ceedling
+
+      - name: Run all unit tests
+        run: ceedling test:all
+        working-directory: tests/
+
+      - name: Coverage report
+        run: |
+          ceedling gcov:all utils:gcov
+          gcovr --fail-under-branch 85 src/
+        working-directory: tests/
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/build/artifacts/gcov/
+
+# Add to README.md:
+# [![CI](https://github.com/USERNAME/REPO/actions/workflows/ci.yml/badge.svg)](...)
+</pre>
+    <div class="slabel">Coverage targets</div>
+    <div class="card">
+      <div class="item">PID, ring buffer, memory pool, Clarke/Park, CAN codec → 95%+ branch<span class="isub">Pure algorithmic. No excuse for less.</span></div>
+      <div class="item">Fault state machine, watchdog, protocol parser → 90%+ branch<span class="isub">Every state transition and fault path must be exercised.</span></div>
+      <div class="item">HAL/driver code with mocked hardware → 70%+ line<span class="isub">Focus on error paths — nominal path is easy. Error handling is where bugs hide.</span></div>
+    </div>
+  </div>
+
+  <!-- W3 -->
+  <div class="week-panel" id="w2">
+    <div class="week-header">
+      <h2 class="week-title">Week 3 — Portfolio and documentation polish</h2>
+      <span class="badge badge-phase">Portfolio</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:60%"></div></div>
+    <div class="alert" style="border-color:var(--accent);background:#071a10;margin-bottom:12px">
+      <div class="alert-title" style="color:var(--accent)">Your GitHub is your first interview — before anyone speaks to you</div>
+      A hiring engineer will open your GitHub before finishing your CV.
+      In 90 seconds they form an opinion. A blank README = junior.
+      An architecture diagram + scope traces + CI badge + demo video = professional.
+    </div>
+    <div class="slabel">Reading</div>
+    <div class="card">
+      <div class="item">Ganssle Ch. 10–13: code comments, documentation philosophy, code reviews<span class="isub">Core Ganssle principle: comments explain WHY, not WHAT. "What" is in the code. "Why" is what the reader needs.</span></div>
+    </div>
+    <div class="slabel">README template — apply to all three projects</div>
+<pre>
+# Project Name — One-line tagline
+
+[![CI](badge)](actions_url)  [![Coverage](badge)](coverage_url)
+
+## What this is
+One paragraph. What does this project do, what hardware runs it,
+what technical problem does it solve?
+Write for a senior embedded engineer — not a beginner.
+
+## Architecture
+[Embed architecture diagram — draw.io or mermaid.js, exported PNG]
+Describe the main components and data flow in 2–3 paragraphs of prose.
+No bullet lists in this section — write in sentences.
+
+## Key technical decisions
+- Why static FreeRTOS allocation instead of dynamic
+- Why centre-aligned PWM for FOC (symmetric sampling)
+- Why Q15 fixed-point instead of float in the 20kHz inner loop
+Each decision: "because X, which gives Y" — cause and consequence.
+
+## Build
+```bash
+git clone ...  &&  mkdir build  &&  cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/arm-none-eabi.cmake
+make -j4  &&  make flash
+```
+Hardware: STM32G431 + DRV8323RS + BGM4108 gimbal motor
+
+## Test results
+Unit tests: 91% branch coverage — report at /docs/coverage/
+System test: 48-hour continuous run, 0 faults, 0 resets, 0 CAN errors
+
+## Evidence
+![Step response before/after PID tuning](docs/scope_step_response.png)
+![Phase currents — sinusoidal FOC output](docs/scope_foc_currents.png)
+![SystemView trace — 6 tasks annotated](docs/systemview_trace.png)
+[Demo video — motor running with CAN telemetry](https://youtu.be/...)
+
+## MISRA compliance
+Mandatory rules: 0 violations. Required: 3 documented deviations (see DEVIATIONS.md).
+
+## Known limitations
+- Sensorless operation not implemented (back-EMF ZC detection)
+- CAN baud rate fixed at 500 kbps
+</pre>
+    <div class="slabel">CV project entry — before and after</div>
+    <div class="grid2">
+      <div class="card card-red">
+        <div style="font-size:12px;color:var(--red);font-weight:500;margin-bottom:8px">❌ Weak — before</div>
+        <div class="item" style="font-size:12px">Personal project: STM32 motor controller using FreeRTOS. Implemented motor control with various peripherals.</div>
+        <div class="item" style="font-size:12px">Skills: C, embedded systems, RTOS</div>
+      </div>
+      <div class="card card-green">
+        <div style="font-size:12px;color:var(--accent);font-weight:500;margin-bottom:8px">✓ Strong — after</div>
+        <div class="item" style="font-size:12px">BLDC FOC motor controller — STM32G4, FreeRTOS, CAN<span class="isub">Field-Oriented Control (Clarke/Park) in Q15 fixed-point; 20kHz inner current loop + 1kHz outer speed loop; 3-layer fault protection (hardware comparator + ISR + task); CAN telemetry 100Hz; 91% unit test branch coverage with host-side Ceedling suite; MISRA-C 2012 mandatory compliance. github.com/you/motor-controller</span></div>
+      </div>
+    </div>
+    <div class="slabel">Daily schedule — Week 3</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Phase 1 README: architecture section, key decisions, verified build instructions. Architecture diagram in draw.io.</div>
+      <div class="item"><span class="day">Tue</span>Phase 2 README: add SystemView trace screenshot with task labels annotated. Write paragraph explaining what the trace demonstrates.</div>
+      <div class="item"><span class="day">Wed</span>Phase 3 README: add Bode plot of open-loop motor, scope trace of sinusoidal phase currents, PID step response before/after tuning. Label every axis on every plot.</div>
+      <div class="item"><span class="day">Thu</span>Record 2–3 minute demo video for Phase 3: motor spinning, step response, CAN telemetry on PC terminal. Upload as unlisted YouTube. Link from README.</div>
+      <div class="item"><span class="day">Fri</span>Write a technical blog post: "Implementing FOC motor control on STM32 from scratch." 1500–2000 words. Explain Clarke/Park, cascade PID structure, one hard bug you fixed. Post to dev.to or GitHub Pages.</div>
+      <div class="item"><span class="day">Sat</span>CV update: rewrite projects section. LinkedIn: add FOC, MISRA-C, CAN, ISO 26262 awareness to skills and summary.</div>
+    </div>
+  </div>
+
+  <!-- W4 -->
+  <div class="week-panel" id="w3">
+    <div class="week-header">
+      <h2 class="week-title">Week 4 — Interview preparation</h2>
+      <span class="badge badge-phase">Interviews</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:80%"></div></div>
+
+    <div class="slabel">Interview types you will face</div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="item"><strong>Technical phone/video screen (30–45 min):</strong> CV walkthrough + 2–3 embedded C questions.<span class="isub">Goal: get to onsite. Answer clearly. Don't over-explain unless asked.</span></div>
+      <div class="item"><strong>Live coding (45–60 min):</strong> whiteboard or shared editor. Usually one algorithmic + one embedded-specific problem.<span class="isub">Common: implement a ring buffer, write an ISR-safe flag, implement a state machine.</span></div>
+      <div class="item"><strong>System design (60 min):</strong> "Design an embedded system for X." Think out loud. Ask clarifying questions first.<span class="isub">Common prompts: motor controller, sensor node, bootloader, CAN network node.</span></div>
+      <div class="item"><strong>Deep technical (60–90 min):</strong> senior engineer goes deep on your projects and tests your limits.<span class="isub">This is where your Week 3 priority inversion work and Phase 3 FOC implementation pay off.</span></div>
+    </div>
+
+    <div class="slabel">Interview Q&A — click to expand</div>
+
+    <div class="tab-nav">
+      <button class="tbtn active" onclick="showTab('embc')">Embedded C</button>
+      <button class="tbtn" onclick="showTab('rtos')">RTOS</button>
+      <button class="tbtn" onclick="showTab('motor')">Motor Control</button>
+      <button class="tbtn" onclick="showTab('sysdes')">System Design</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-embc">
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">What does volatile do and when exactly do you need it? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">volatile tells the compiler the variable's value may change outside normal program flow — so it must never be cached in a register or optimised away. Use it for: (1) hardware memory-mapped registers — the register value changes when hardware writes it, (2) variables shared between an ISR and a task/main loop — the ISR can write at any moment, (3) variables used in busy-wait loops where the loop condition would otherwise be optimised away. Common bug: task polls a flag set by an ISR without volatile — compiler caches the flag in a register and the loop never sees the ISR update. Critical point: volatile does NOT provide atomicity. A read-modify-write on a volatile variable is still not atomic on Cortex-M without a critical section. volatile and atomic are separate concerns.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">Can const and volatile be combined? Give a real example. <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">Yes — they are completely orthogonal. const means "this code will not write to the variable." volatile means "the value may change outside my control." A read-only hardware status register is volatile const: your code never writes to it (const), but its value changes as hardware updates it (volatile). Declaration: volatile const uint32_t *const STATUS_REG = (volatile const uint32_t *)0x40020000; — the register address is const (pointer doesn't move), the register contents are volatile const (we read it, hardware writes it).</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">What is undefined behaviour? Give three embedded-specific examples. <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">Undefined behaviour (UB) is code whose outcome the C standard does not define — the compiler can generate anything, including code that appears to work at -O0 and silently breaks at -O2. Three embedded examples: (1) Signed integer overflow: int x = INT_MAX; x++; — UB. The compiler assumes this never happens and can delete range checks that depend on it. Use uint32_t and explicit wrapping. (2) Type-aliasing violation: casting a float* to uint32_t* and reading it — UB. Use memcpy() or a union instead. (3) Reading an uninitialised variable: uint8_t buf[64]; if (buf[0] == 0xFF) — UB. The compiler may treat the branch as dead code. The fix is always explicit initialisation. MISRA Dir 4.1 mandates that all execution paths be free of UB.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">Implement an ISR-safe ring buffer in C on a whiteboard <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">Key design decisions to state before writing code: (1) Power-of-two size so head/tail wrap with bitmask, no division. (2) head = write index (ISR writes), tail = read index (task reads) — single producer, single consumer, lock-free if indices are volatile uint32_t on Cortex-M (32-bit reads/writes are atomic). (3) Declare head and tail volatile. (4) Full condition: (head - tail) == size. Empty: head == tail. Core write: buf[head++ &amp; mask] = item; Core read: item = buf[tail++ &amp; mask]; If multiple writers exist, need a critical section around the write. State this explicitly. The volatile + power-of-two approach is the standard embedded lock-free ring buffer pattern.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">What is the difference between #define and const for constants in embedded C? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">#define is a preprocessor text substitution — it has no type, no scope, cannot be passed by pointer, does not appear in the debugger symbol table. const is a typed variable with scope and visibility that does appear in debug symbols. In embedded C, const variables declared at file scope with static are typically placed in .rodata section in flash — same as #define in terms of RAM usage. Prefer typed constants (static const uint32_t, enum) over #define for better type checking, debugger visibility, and MISRA compliance (Rule 5.4 recommends macro names be distinct, and many coding standards prefer typed constants). Use #define only for conditional compilation guards and function-like macros where a typed constant cannot substitute.</div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-rtos">
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">Explain priority inversion. How did you reproduce and fix it? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">Priority inversion occurs when a high-priority task is blocked waiting for a resource held by a low-priority task, while a medium-priority task runs freely — effectively inverting the execution order of high and medium. I reproduced it deliberately in Phase 2: three tasks (Low P1, Medium P2, High P3). Low holds a binary semaphore doing "work" via vTaskDelay. High tries to take the same semaphore and blocks. Medium has no semaphore involvement but preempts Low (because Medium priority > Low). High is starved even though it outranks Medium. I measured this on an oscilloscope: High's GPIO was dark while Medium's was on. Fix: replace the binary semaphore with a FreeRTOS mutex. Mutexes implement priority inheritance — when High blocks on the mutex held by Low, the kernel temporarily raises Low's priority to match High's, so Low can finish and release. Medium can no longer preempt it. After release, Low returns to P1. I re-measured on scope and verified High ran within microseconds of Low releasing the mutex.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">What is the difference between a semaphore and a mutex? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">A semaphore is a signalling mechanism. One entity gives it, another waits for it. There is no ownership — the task that takes it doesn't have to be the one that gives it. Use for: ISR-to-task synchronisation, task-to-task signalling, counting available resources. A mutex is a mutual exclusion mechanism with ownership. Only the task that takes the mutex may give it. This ownership enables priority inheritance — the scheduler knows which task holds the mutex and can boost its priority to prevent inversion. Because ownership is required, a mutex cannot be given from an ISR (ISRs have no task context). The rule: use semaphores for signalling, use mutexes for protecting shared data between tasks.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">How would you design a safe watchdog system for a multi-task RTOS application? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">A naive watchdog that kicks IWDG in main() or a single task is an anti-pattern: if any other task hangs, the watchdog never knows. The correct pattern — which I implemented in Phases 2 and 3 — is per-task heartbeat tokens with a dedicated watchdog supervisor. Each task has a bitmask token. At the end of each execution cycle, it sets its bit in a shared atomic flags word (single STR on Cortex-M is atomic). A WatchdogMonitor task runs periodically and checks whether all task flags have been set since the last check. If all flags are present: kick IWDG and clear flags. If any flag is missing: that task didn't run within its period — log the failing task name to backup SRAM and do NOT kick IWDG, allowing the hardware watchdog to reset the system. On next boot, the log shows which task caused the reset. This guarantees the IWDG is only refreshed when the entire system is healthy, not just one task.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">What are the FreeRTOS heap schemes and when would you use each? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">heap_1: allocation only, no free. Zero fragmentation. Use when all objects are allocated at startup and never freed — the simplest and safest option. heap_2: free supported, best-fit algorithm. Can fragment over time. Avoid unless all allocations are the same size. heap_3: wraps libc malloc/free — thread-safe wrapper. Depends on your C library's heap quality. heap_4: first-fit with block coalescence — adjacent free blocks are merged. Best general-purpose choice. Reduces fragmentation compared to heap_2. heap_5: like heap_4 but spans multiple non-contiguous memory regions (for example, on-chip CCM + SRAM + external SRAM on STM32H7). For automotive and safety-critical work, the safest choice is to not use dynamic allocation at runtime at all — allocate everything statically at startup using xTaskCreateStatic, xQueueCreateStatic, etc. I did this in Phase 2 and verified zero runtime heap usage.</div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-motor">
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">Explain FOC and why it is better than trapezoidal commutation <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">Trapezoidal commutation drives one phase high, one low, one floating at each of 6 rotor positions. It's simple and fast but produces torque ripple — the torque-producing current vector jumps in 60-degree steps rather than rotating smoothly, causing vibration, audible noise, and reduced efficiency especially at low speeds. Field-Oriented Control solves this by continuously rotating the current vector to stay perpendicular to the rotor flux — the condition for maximum torque per ampere. The Clarke transform converts three-phase currents to a stationary 2D frame (alpha-beta). The Park transform converts to a frame rotating synchronously with the rotor (d-q). In this frame, currents appear as DC values: Id (flux component, set to zero for maximum efficiency in a PMSM) and Iq (torque component, commanded by the outer speed loop). Two PID controllers regulate Id and Iq — giving precise, fast torque control. Outputs go through Inverse Park and SVPWM to generate three-phase PWM. Result: smooth torque at all speeds, higher efficiency, lower acoustic noise, faster dynamic response. Every automotive traction drive and EPS motor controller uses FOC for these reasons.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">Why must the inner current loop be faster than the outer speed loop in cascade control? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">In cascade control, the outer speed loop commands a setpoint to the inner current loop. The outer loop treats the inner loop as an ideal, instantaneous process. If the inner loop responds too slowly, the outer loop issues commands that haven't been executed yet — creating a feedback delay that destabilises the outer loop. The bandwidth separation rule requires the inner loop to be at least 5–10× faster than the outer loop. In my implementation: inner current loop at 20kHz with ~2–5kHz bandwidth; outer speed loop at 1kHz with 50–200Hz bandwidth — a separation factor of 10–20, which is conservative and stable. There's also a physical reason: current must be controllable faster than speed changes, because current produces torque, and torque changes speed. The current loop bandwidth must comfortably exceed the mechanical bandwidth of the motor-load system.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">What is integral windup and how do you prevent it? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">Integral windup occurs when the PID output is saturated (the actuator is at its limit) but the integral term continues accumulating error. When the system comes out of saturation, the integrator has grown so large it drives the output in the wrong direction, causing overshoot or oscillation before it slowly unwinds. I implemented clamping anti-windup in my motor controller: the integrator only updates when the total PID output is within the output limits, or when the output is saturated but the error and integrator have opposite signs (meaning the integrator is already working to desaturate). This is the simplest effective method — easy to implement in fixed-point, predictable behaviour, trivially verified in unit tests (I have a specific test for it). The alternative — back-calculation anti-windup — feeds the difference between saturated and unsaturated output back through a gain, giving smoother recovery but adding a tuning parameter.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">What is phase margin and why does it matter for your PID tuning? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">Phase margin is the amount of additional phase lag the open-loop system can tolerate before the closed-loop system becomes unstable — measured at the gain crossover frequency (where |G(jω)| = 1, or 0 dB). A system with zero phase margin will oscillate continuously. The engineering target is 45–60 degrees. Less than 30 degrees gives an oscillatory, lightly-damped response that is sensitive to parameter variation. More than 80 degrees gives a sluggish overdamped response. In PID tuning: increasing Kp reduces phase margin (moves the gain crossover to a higher frequency where the plant has more phase lag). Adding derivative action adds phase (good — improves margin). Adding integral action subtracts phase at high frequencies (use with care). I computed the phase margin of my motor + PID system using the Python control library's control.margin() function as part of Week 5 of Phase 3, verified it was in the 50–60 degree range before connecting to hardware, and compared the predicted step response with the measured oscilloscope trace.</div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-sysdes">
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">Design an embedded motor controller for an electric power steering system <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">Start with clarifying questions: motor type (PMSM assumed), bus voltage (12V or 48V), torque/speed specs, safety integrity level (ISO 26262 ASIL B or D typical for EPS), communication bus (CAN/CAN-FD/LIN). For a 48V PMSM with ASIL B: MCU: dual-core (e.g. STM32H7 or Renesas RH850) — one core runs FOC at 20kHz, second core runs independent safety monitoring and cross-checks. FOC architecture: same cascade as my Phase 3 project — Clarke/Park in fixed-point, Id/Iq PIDs, SVPWM, outer torque loop commanded by steering ECU via CAN. Safety mechanisms: hardware overcurrent protection (comparator + gate driver ENABLE), software 3-layer protection (ISR + task + thermal derating), IWDG with per-task heartbeats, plausibility checks on torque sensor input (redundant sensors compared), cross-core comparison of safety-critical signals. Interface: CAN-FD for torque command and status. Diagnostics: DTC storage in NVM, UDS over CAN for fault readout. Testing strategy: MISRA-C compliance, MC/DC coverage targets, HIL testing of full torque control loop, FMEA for each safety mechanism. This demonstrates both technical depth and awareness of the production safety context.</div>
+      </div>
+      <div class="qa">
+        <div class="qa-q" onclick="toggleQA(this)">How would you approach testing a safety-critical embedded system? <span class="qa-arrow">▼</span></div>
+        <div class="qa-a">Testing at four levels with documented coverage targets. Unit tests: host-side with mocked hardware, for all algorithmic components (PID, transforms, state machines, protocol codecs). Coverage target: MC/DC for ASIL C/D, branch coverage for ASIL A/B. Integration tests on target hardware: verify inter-module interactions — ADC triggers correct ISR, ISR posts to queue correctly, task wakes within deadline. HIL tests: real MCU, simulated motor plant (DAC-driven current feedback, simulated encoder). All fault injection scenarios tested: overcurrent, overvoltage, encoder loss, communication timeout. System tests: real motor, full operating envelope, thermal stress, power cycling, long-duration soak. Automation: CI pipeline runs unit tests on every commit, HIL tests nightly. Documentation: test plan with pass/fail criteria, coverage report, requirements-to-test traceability matrix. For ISO 26262: safety requirements → safety mechanisms → verification tests must all be traceable in both directions. My Phase 4 GitHub CI pipeline with Ceedling demonstrates I already work this way.</div>
+      </div>
+    </div>
+
+    <div class="slabel" style="margin-top:20px">Live coding exercises — practice timed (30 min each)</div>
+    <div class="card">
+      <div class="item"><strong>1. Circular ring buffer</strong> in C: init, push, pop, is_full, is_empty. Lock-free single producer / single consumer.<span class="isub">Follow-up: "make it thread-safe for multiple producers." Add critical section around write.</span></div>
+      <div class="item"><strong>2. ISR-safe flag</strong>: task sets a flag, ISR reads it. What qualifiers, what memory barriers?<span class="isub">Answer: volatile for the flag, disable IRQ for read-modify-write on Cortex-M.</span></div>
+      <div class="item"><strong>3. Table-driven state machine</strong>: define states, events, 2D transition table, dispatch function with function pointer actions.</div>
+      <div class="item"><strong>4. CRC-16 function</strong>: compute checksum over a byte array. Explain table-driven vs bit-by-bit approaches and the RAM/CPU trade-off.</div>
+      <div class="item"><strong>5. Explain a HardFault</strong>: given CFSR = 0x00008200 and a stacked PC value, what happened and where?<span class="isub">0x8200 = BFAR valid + PRECISERR = precise bus fault at the address in BFAR. The stacked PC is the faulting instruction.</span></div>
+    </div>
+  </div>
+
+  <!-- W5 -->
+  <div class="week-panel" id="w4">
+    <div class="week-header">
+      <h2 class="week-title">Week 5 — Company research, applications, and launch</h2>
+      <span class="badge badge-phase" style="border-color:#1a5c3a;background:#071a10;color:var(--accent)">Launch</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:100%"></div></div>
+    <div class="slabel">Reading</div>
+    <div class="card">
+      <div class="item">Ganssle — final chapters: career development, the embedded profession, staying current<span class="isub">Read before sending first application. His perspective on the craft is worth carrying with you.</span></div>
+    </div>
+    <div class="slabel">Company research checklist — do this for every application</div>
+    <div class="card">
+      <div class="item"><strong>MCU family:</strong> STM32 (ST), RH850 (Renesas), Aurix TC3xx (Infineon), S32K (NXP), TMS570 (TI)?<span class="isub">Read the architecture overview for any MCU family you don't know. 2 hours research per platform.</span></div>
+      <div class="item"><strong>Safety standard:</strong> ISO 26262 (automotive), IEC 61508 (industrial), DO-178C (aerospace)?<span class="isub">Know the ASIL levels (A–D) and what they require for software. EPS = typically ASIL D. Body control = ASIL A/B.</span></div>
+      <div class="item"><strong>RTOS:</strong> FreeRTOS, AUTOSAR OS, SafeRTOS, QNX, VxWorks?<span class="isub">If AUTOSAR OS: read the AUTOSAR OS spec overview — it's RMS scheduling with OSEK conformance classes. Familiar concepts, different API.</span></div>
+      <div class="item"><strong>Bus protocols:</strong> CAN, CAN-FD, LIN, FlexRay, automotive Ethernet?<span class="isub">If CAN-FD: know the differences from CAN 2.0B — higher data rate (up to 8 Mbit/s), larger payload (64 bytes), backward-compatible physical layer.</span></div>
+      <div class="item"><strong>Published content:</strong> SAE papers, patents, conference talks from their engineers<span class="isub">"I read your SAE paper on FOC efficiency improvements" is a genuine differentiator in a first interview.</span></div>
+    </div>
+    <div class="slabel">ISO 26262 — know enough to discuss confidently</div>
+    <div class="card">
+      <div class="item">ASIL = Automotive Safety Integrity Level, A to D. Determined by: Severity × Exposure × Controllability of a hazard.</div>
+      <div class="item">Part 6 (software): MISRA-C, MC/DC coverage, FMEA, DFA, static analysis are required methods at ASIL B+.<span class="isub">You practice all of these. Frame them explicitly as ISO 26262 relevant methods in interviews.</span></div>
+      <div class="item">Safety mechanisms you have implemented: 3-layer overcurrent protection, multi-task watchdog, fault state machine with NVM logging, per-task heartbeat.<span class="isub">These are genuine functional safety mechanisms. Name them as such. You built them for real — not as checkbox exercises.</span></div>
+    </div>
+    <div class="slabel">Pre-application portfolio checklist</div>
+    <div class="card card-green">
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>All 3 GitHub repos: README with architecture diagram, build instructions, scope traces, CI badge</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Phase 3 repo: demo video linked, Bode plot present, CAN frame design documented</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>CI pipeline: GitHub Actions running unit tests + coverage gate on every push</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>MISRA compliance: deviation record (DEVIATIONS.md) present in each repo</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>CV: project entries rewritten with specific technical claims and GitHub links</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Technical blog post published and linked from LinkedIn and CV</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>All interview answers practised out loud — not just known in your head</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>LinkedIn: updated summary mentioning FOC, FreeRTOS, CAN, MISRA-C, ISO 26262 awareness</div></div>
+    </div>
+    <div class="slabel">Programme complete</div>
+    <div class="card card-green">
+      <div style="color:var(--accent);font-weight:500;margin-bottom:12px;font-size:14px">~1,160 hours of focused embedded systems development — what you've built</div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Project 1: STM32 CLI system — layered UART driver, FSM framework, static memory pool, Unity unit tests, MISRA-C</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Project 2: FreeRTOS sensor fusion node — 6 tasks, DMA, LwIP Ethernet, fault handlers, SystemView traces, Python integration tests, CI</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Project 3: BLDC FOC motor controller — Clarke/Park Q15, 20kHz cascade PID, CAN telemetry, 3-layer fault protection, scope traces, demo video</div></div>
+      <div style="margin-top:14px;padding:14px;background:var(--bg3);border-radius:6px;font-size:13px;color:var(--text2);line-height:1.7">
+        You now have more demonstrable depth in RTOS design, motor control theory, and
+        safety-oriented coding than most candidates with 3–4 years of development experience.
+        Your 2 years of STM32 support experience — which this programme built on top of, not
+        replaced — means you also know how these systems fail in production. That combination
+        is genuinely rare in the job market.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  <span>phase 4 of 4 · 5 weeks · 200 hrs · programme complete</span>
+  <div style="display:flex;gap:20px">
+    <a href="phase3.html">← phase 3</a>
+    <a href="index.html">index →</a>
+  </div>
+</div>
+
+<script>
+function showWeek(n) {
+  document.querySelectorAll('.week-panel').forEach((p,i) => p.classList.toggle('active', i===n));
+  document.querySelectorAll('.wtab').forEach((b,i) => b.classList.toggle('active', i===n));
+}
+function toggleQA(el) {
+  const ans = el.nextElementSibling;
+  const arrow = el.querySelector('.qa-arrow');
+  ans.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

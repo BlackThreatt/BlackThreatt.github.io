@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Embedded Systems Self-Training Programme</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #141414;
+    --bg3: #1a1a1a;
+    --border: #2a2a2a;
+    --border2: #333;
+    --text: #e8e8e8;
+    --text2: #999;
+    --text3: #666;
+    --accent: #00e5a0;
+    --accent2: #00b87a;
+    --blue: #4da6ff;
+    --orange: #ff8c42;
+    --purple: #b47fff;
+    --red: #ff5757;
+    --yellow: #ffd166;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  .hero {
+    padding: 80px 48px 60px;
+    max-width: 1100px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -.02em;
+    margin-bottom: 20px;
+    color: var(--text);
+  }
+
+  h1 strong { font-weight: 600; color: var(--accent); }
+
+  .hero-desc {
+    font-size: 16px;
+    color: var(--text2);
+    max-width: 600px;
+    margin-bottom: 36px;
+    line-height: 1.8;
+  }
+
+  .stats {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px;
+  }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .phases-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  @media (max-width: 700px) { .phases-grid { grid-template-columns: 1fr; } }
+
+  .phase-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    text-decoration: none;
+    color: var(--text);
+    display: block;
+    transition: border-color .2s, background .2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phase-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .phase-card:nth-child(1)::before { background: var(--blue); }
+  .phase-card:nth-child(2)::before { background: var(--purple); }
+  .phase-card:nth-child(3)::before { background: var(--orange); }
+  .phase-card:nth-child(4)::before { background: var(--accent); }
+
+  .phase-card:hover {
+    border-color: var(--border2);
+    background: var(--bg3);
+  }
+
+  .phase-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+
+  .phase-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .phase-card:nth-child(1) .phase-title { color: var(--blue); }
+  .phase-card:nth-child(2) .phase-title { color: var(--purple); }
+  .phase-card:nth-child(3) .phase-title { color: var(--orange); }
+  .phase-card:nth-child(4) .phase-title { color: var(--accent); }
+
+  .phase-meta {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--mono);
+    margin-bottom: 14px;
+  }
+
+  .phase-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .phase-books {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .book-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  .extras-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 48px;
+  }
+
+  @media (max-width: 700px) { .extras-grid { grid-template-columns: 1fr; } }
+
+  .extra-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    text-decoration: none;
+    color: var(--text);
+    display: block;
+    transition: border-color .2s;
+  }
+
+  .extra-card:hover { border-color: var(--border2); }
+
+  .extra-icon {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .extra-title {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .extra-desc {
+    font-size: 12px;
+    color: var(--text3);
+    line-height: 1.5;
+  }
+
+  .roadmap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    margin-bottom: 48px;
+  }
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tl-item {
+    display: grid;
+    grid-template-columns: 80px 20px 1fr;
+    gap: 0 16px;
+    padding-bottom: 20px;
+    position: relative;
+  }
+
+  .tl-item:last-child { padding-bottom: 0; }
+
+  .tl-week {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    padding-top: 2px;
+    text-align: right;
+  }
+
+  .tl-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .tl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+
+  .tl-connector {
+    width: 1px;
+    flex: 1;
+    background: var(--border);
+    margin-top: 4px;
+  }
+
+  .tl-item:last-child .tl-connector { display: none; }
+
+  .tl-content { padding-top: 0; }
+  .tl-phase { font-size: 13px; font-weight: 500; }
+  .tl-detail { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    max-width: 1100px;
+    margin: 0 auto;
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  /* ── Global nav ── */
+  .topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+    height: 48px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .topnav-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .topnav-left a {
+    color: var(--text3);
+    text-decoration: none;
+    transition: color .15s;
+  }
+
+  .topnav-left a:hover { color: var(--text); }
+
+  .topnav-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .topnav-right a {
+    color: var(--text3);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: .04em;
+    transition: color .15s;
+    padding: 4px 0;
+    border-bottom: 1px solid transparent;
+  }
+
+  .topnav-right a:hover { color: var(--text2); }
+
+  .topnav-right a.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  @media (max-width: 600px) {
+    .topnav { padding: 0 20px; }
+    .topnav-right { gap: 14px; }
+    .hero { padding: 40px 20px 36px; }
+    .main { padding: 32px 20px; }
+    .footer { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="index.html">~/embedded-training</a>
+  </div>
+  <div class="topnav-right">
+    <a href="index.html" class="active">curriculum</a>
+    <a href="about.html">about</a>
+    <a href="blog.html">blog</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">// embedded systems self-training programme</div>
+  <h1>From support engineer<br>to <strong>motor control developer</strong></h1>
+  <p class="hero-desc">
+    A structured full-time curriculum for an STM32 support engineer transitioning
+    into embedded software development, with a specialisation in automotive motor control.
+    Built around your existing debugging depth — adding architecture, RTOS design, control
+    theory, and FOC motor control.
+  </p>
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-num">4</span>
+      <span class="stat-label">Phases</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">29</span>
+      <span class="stat-label">Weeks</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">~1,160</span>
+      <span class="stat-label">Hours total</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num">3</span>
+      <span class="stat-label">Portfolio projects</span>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="section-title">// phases — click to open</div>
+
+  <div class="phases-grid">
+    <a href="phase1.html" class="phase-card">
+      <div class="phase-num">PHASE 01</div>
+      <div class="phase-title">Foundations refresh</div>
+      <div class="phase-meta">6 weeks · 240 hrs · Mon–Sat</div>
+      <p class="phase-desc">
+        Rebuild embedded C from first principles. Layered architecture, HAL design,
+        state machines, memory management, and unit testing habits. Closes the gap
+        between "C that works" and "C you'd show in a code review."
+      </p>
+      <div class="phase-books">
+        <span class="book-tag">Modern C — Gustedt</span>
+        <span class="book-tag">Embedded SW Design — Beningo</span>
+        <span class="book-tag">C Pointers — finish</span>
+      </div>
+    </a>
+
+    <a href="phase2.html" class="phase-card">
+      <div class="phase-num">PHASE 02</div>
+      <div class="phase-title">RTOS and real-time design</div>
+      <div class="phase-meta">8 weeks · 320 hrs · Mon–Sat</div>
+      <p class="phase-desc">
+        FreeRTOS internals, queues, semaphores, mutexes, priority inversion, deadlock,
+        DMA integration, LwIP Ethernet, SystemView profiling, and fault handlers.
+        Builds on your existing STM32 + Ethernet support experience.
+      </p>
+      <div class="phase-books">
+        <span class="book-tag">Hands-On RTOS — Amos</span>
+        <span class="book-tag">Embedded RT OS — K C Wang</span>
+        <span class="book-tag">Making Embedded Systems — White</span>
+      </div>
+    </a>
+
+    <a href="phase3.html" class="phase-card">
+      <div class="phase-num">PHASE 03</div>
+      <div class="phase-title">Control theory and motor control</div>
+      <div class="phase-meta">10 weeks · 400 hrs · Mon–Sat</div>
+      <p class="phase-desc">
+        Control systems theory (Laplace, PID, Bode), DC motor modelling, BLDC
+        trapezoidal commutation, and full Field-Oriented Control (FOC) implementation
+        on STM32. CAN telemetry and multi-layer fault protection.
+      </p>
+      <div class="phase-books">
+        <span class="book-tag">Control Systems Eng. — Nise</span>
+        <span class="book-tag">Embedded Control in C — Mann</span>
+        <span class="book-tag">Applied Embedded Elec. — Twomey</span>
+      </div>
+    </a>
+
+    <a href="phase4.html" class="phase-card">
+      <div class="phase-num">PHASE 04</div>
+      <div class="phase-title">Professional readiness</div>
+      <div class="phase-meta">5 weeks · 200 hrs · Mon–Sat</div>
+      <p class="phase-desc">
+        MISRA-C 2012 compliance, Ceedling+Unity test suites, GitHub Actions CI,
+        portfolio documentation, and deep interview preparation covering embedded C,
+        RTOS, motor control, and system design questions.
+      </p>
+      <div class="phase-books">
+        <span class="book-tag">Art of Designing ES — Ganssle</span>
+        <span class="book-tag">MISRA-C 2012</span>
+        <span class="book-tag">Ceedling + Unity + CMock</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="section-title">// reference material</div>
+
+  <div class="extras-grid">
+    <a href="hardware-bom.html" class="extra-card">
+      <div class="extra-icon">🔧</div>
+      <div class="extra-title">Hardware & Resources</div>
+      <p class="extra-desc">Full hardware BOM with prices, recommended STM32 boards, tools, software links, and free reference materials.</p>
+    </a>
+  </div>
+
+  <div class="section-title">// full timeline overview</div>
+
+  <div class="roadmap">
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-week">Wk 1–6</div>
+        <div class="tl-line"><div class="tl-dot" style="background:var(--blue)"></div><div class="tl-connector"></div></div>
+        <div class="tl-content">
+          <div class="tl-phase" style="color:var(--blue)">Phase 1 — Foundations (240 hrs)</div>
+          <div class="tl-detail">Modern C · Beningo architecture · layered UART driver · FSM framework · memory pool · unit tests with Unity</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-week">Wk 7–14</div>
+        <div class="tl-line"><div class="tl-dot" style="background:var(--purple)"></div><div class="tl-connector"></div></div>
+        <div class="tl-content">
+          <div class="tl-phase" style="color:var(--purple)">Phase 2 — RTOS (320 hrs)</div>
+          <div class="tl-detail">FreeRTOS internals · IPC · priority inversion/deadlock · DMA · LwIP Ethernet · SystemView · fault handlers</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-week">Wk 15–24</div>
+        <div class="tl-line"><div class="tl-dot" style="background:var(--orange)"></div><div class="tl-connector"></div></div>
+        <div class="tl-content">
+          <div class="tl-phase" style="color:var(--orange)">Phase 3 — Motor Control (400 hrs)</div>
+          <div class="tl-detail">Control theory · PID simulation · DC motor hardware · BLDC trapezoidal · FOC Clarke/Park · cascade loops · CAN · faults</div>
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-week">Wk 25–29</div>
+        <div class="tl-line"><div class="tl-dot" style="background:var(--accent)"></div><div class="tl-connector"></div></div>
+        <div class="tl-content">
+          <div class="tl-phase" style="color:var(--accent)">Phase 4 — Professional readiness (200 hrs)</div>
+          <div class="tl-detail">MISRA-C · Ceedling CI · portfolio polish · interview prep · company research · applications</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  generated for personal offline use · embedded systems self-training programme · ~7 months full time
+</div>
+
+</body>
+</html>

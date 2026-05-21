@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 3 — Motor Control | Embedded Training</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .phase-tag { color: var(--orange); }
+  .week-title { color: var(--orange); }
+  .prog-fill { background: var(--orange); }
+  .badge-phase { color: var(--orange); border-color: #6e3a1a; background: #1a0e07; }
+  .ms-dot-phase { background: var(--orange); }
+  .wtab.active { border-color: var(--orange); color: var(--orange); }
+  .day { border-color: #6e3a1a; color: var(--orange); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="index.html">~/embedded-training</a>
+    <span class="sep">/</span>
+    <span class="current">phase-3</span>
+  </div>
+  <div class="topnav-right">
+    <a href="index.html" class="active">curriculum</a>
+    <a href="about.html">about</a>
+    <a href="blog.html">blog</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="phase-tag">// phase 03 of 04</div>
+  <h1 class="page-title">Control theory and motor control</h1>
+  <p class="page-subtitle">
+    Control systems theory, PID design and simulation, DC motor modelling, BLDC
+    trapezoidal commutation, and full Field-Oriented Control (FOC) on STM32.
+    CAN telemetry, multi-layer fault protection, and cascade speed control.
+    The highest-value phase for automotive roles.
+  </p>
+  <div class="meta-row">
+    <span class="meta-item"><strong>Duration:</strong> 10 weeks</span>
+    <span class="meta-item"><strong>Hours:</strong> ~400 hrs (40/week)</span>
+    <span class="meta-item"><strong>Schedule:</strong> Mon–Sat full time</span>
+    <span class="meta-item"><strong>Capstone:</strong> BLDC FOC motor controller with CAN telemetry</span>
+  </div>
+</div>
+
+<div class="page-main">
+
+  <div class="slabel">// books for this phase</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="item"><strong>Control Systems Engineering</strong> — Norman Nise (add this book)<span class="isub">The standard university textbook. You need Ch. 1–5 (modelling/response), Ch. 8–10 (root locus, Bode, stability). Skip the rest.</span></div>
+    <div class="item"><strong>Embedded Control Systems in C/C++</strong> — Jim Mann (add this book)<span class="isub">Bridges continuous theory to discrete MCU implementation. Discrete PID, z-transform, anti-windup, fixed-point. Read alongside Nise.</span></div>
+    <div class="item"><strong>Applied Embedded Electronics</strong> — Jerry Twomey<span class="isub">ADC, PWM, signal conditioning, gate drivers, current sensing, encoder interfacing. The hardware side.</span></div>
+  </div>
+
+  <div class="slabel">// daily schedule template</div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="item">08:00 – 10:30 &nbsp;Control theory (Nise) — read + work every problem by hand<span class="isub">Do not skip the math. The ability to sketch a Bode plot or compute gain margin is an interview skill.</span></div>
+    <div class="item">10:30 – 13:00 &nbsp;Python simulation — model everything before touching hardware<span class="isub">scipy.signal, scipy.integrate, matplotlib, control library (pip install control)</span></div>
+    <div class="item">14:00 – 15:30 &nbsp;Twomey electronics track — sensing, PWM, gate drivers</div>
+    <div class="item">15:30 – 17:30 &nbsp;Hardware implementation on STM32 — implement what you simulated<span class="isub">Mann bridges theory → MCU. Read it chapter-by-chapter alongside hardware work.</span></div>
+    <div class="item">Saturday &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Full test session: scope traces, performance measurements, written analysis. Push to GitHub.</div>
+  </div>
+
+  <div class="slabel">// hardware bill of materials</div>
+  <div class="card" style="margin-bottom:24px">
+    <div class="item">STM32F4 or STM32G4 development board (Nucleo or custom)<span class="isub">G4 series preferred for motor control — dedicated HRTIM, better ADC triggering</span></div>
+    <div class="item">Gimbal BLDC motor: BGM4108-130 or similar (12–24V, low KV, safe for learning)<span class="isub">~€15–25. Never use high-KV drone motors for first experiments — too fast, dangerous</span></div>
+    <div class="item">Gate driver: DRV8323RS (SPI-configurable, integrated protections, 3-phase) or L6234<span class="isub">DRV8323 is the professional choice. ~€8. Includes current sense amplifiers.</span></div>
+    <div class="item">Incremental encoder (optional for Weeks 4–5, required for Weeks 6+): 1000 PPR minimum<span class="isub">Or use the motor's built-in Hall sensors for trapezoidal commutation</span></div>
+    <div class="item">CAN transceiver: SN65HVD230 (3.3V, ISO 11898) — ~€2<span class="isub">120Ω termination resistors at each end of the bus. Two nodes minimum to test CAN.</span></div>
+    <div class="item">Oscilloscope (mandatory from Week 2 onward): Rigol DS1054Z or similar<span class="isub">You cannot tune a control loop without a scope. This is not optional equipment.</span></div>
+    <div class="item">Current-sense resistors: 10–50 mΩ shunts, 1% tolerance<span class="isub">Or rely on DRV8323 built-in current sense amplifiers</span></div>
+  </div>
+
+  <div class="week-tabs">
+    <button class="wtab active" onclick="showWeek(0)">W1</button>
+    <button class="wtab" onclick="showWeek(1)">W2</button>
+    <button class="wtab" onclick="showWeek(2)">W3</button>
+    <button class="wtab" onclick="showWeek(3)">W4</button>
+    <button class="wtab" onclick="showWeek(4)">W5</button>
+    <button class="wtab" onclick="showWeek(5)">W6</button>
+    <button class="wtab" onclick="showWeek(6)">W7</button>
+    <button class="wtab" onclick="showWeek(7)">W8</button>
+    <button class="wtab" onclick="showWeek(8)">W9</button>
+    <button class="wtab" onclick="showWeek(9)">W10</button>
+  </div>
+
+  <!-- W1 -->
+  <div class="week-panel active" id="w0">
+    <div class="week-header">
+      <h2 class="week-title">Week 1 — Control systems fundamentals</h2>
+      <span class="badge badge-phase">Theory</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:10%"></div></div>
+    <div class="alert" style="border-color:var(--orange);background:#1a0e07;margin-bottom:12px">
+      <div class="alert-title" style="color:var(--orange)">Do not rush this week</div>
+      Every concept in Weeks 3–10 builds on what you learn here. Engineers who skip
+      the theory end up with systems that "sort of work" but break mysteriously under load.
+      The math gives you the ability to predict and explain behaviour, not just tune by trial and error.
+    </div>
+    <div class="chips">
+      <span class="chip">open vs closed loop</span><span class="chip">transfer function</span>
+      <span class="chip">Laplace transform</span><span class="chip">block diagram algebra</span>
+      <span class="chip">poles and zeros</span><span class="chip">steady-state error</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Nise Ch. 1: intro — open vs closed loop, feedback, error signal. Before reading: draw a block diagram of your future motor controller by hand.</div>
+        <div class="item">Nise Ch. 2: modelling in the frequency domain — Laplace review, transfer functions, block diagram reduction<span class="isub">If Laplace is rusty: spend an extra half-day here. Everything depends on it. Khan Academy has a free review series.</span></div>
+        <div class="item">Nise Ch. 3: time-domain response — first and second-order systems, poles, natural frequency ωn, damping ratio ζ</div>
+        <div class="item">Twomey Ch. 1–3: analog signals, ADC fundamentals, Nyquist sampling theorem</div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Python simulation — run every day</div>
+        <div class="item">Install: pip install scipy matplotlib control numpy</div>
+        <div class="item">First-order system step response: vary K and τ. Observe only magnitude/speed change — no oscillation.</div>
+        <div class="item">Second-order system: vary ζ from 0.1 to 2.0. Observe underdamped, critically damped, overdamped responses.</div>
+        <div class="item">STM32 ADC exercise: read potentiometer, stream samples over UART, plot in Python. Observe quantisation noise at 8-bit vs 12-bit.</div>
+      </div>
+    </div>
+<pre>
+# Week 1 simulation — first and second-order step responses
+import numpy as np
+from scipy import signal
+import matplotlib.pyplot as plt
+
+# First-order: G(s) = K / (tau*s + 1)
+K, tau = 5.0, 0.2
+sys1 = signal.TransferFunction([K], [tau, 1])
+t, y = signal.step(sys1)
+print(f"Steady-state: {y[-1]:.3f} (should be {K})")
+print(f"Time constant tau visible at y = {K*0.632:.3f}")
+
+# Second-order: G(s) = wn^2 / (s^2 + 2*zeta*wn*s + wn^2)
+wn = 10.0  # natural frequency rad/s
+for zeta in [0.1, 0.5, 0.707, 1.0, 2.0]:
+    sys2 = signal.TransferFunction([wn**2], [1, 2*zeta*wn, wn**2])
+    t, y = signal.step(sys2)
+    overshoot = (max(y) - 1.0) * 100
+    print(f"zeta={zeta:.3f}: overshoot={overshoot:.1f}%")
+    plt.plot(t, y, label=f'ζ={zeta}')
+plt.legend(); plt.xlabel('Time (s)'); plt.title('Effect of damping ratio')
+plt.show()
+</pre>
+  </div>
+
+  <!-- W2 -->
+  <div class="week-panel" id="w1">
+    <div class="week-header">
+      <h2 class="week-title">Week 2 — DC motor modelling and discrete-time fundamentals</h2>
+      <span class="badge badge-phase">Modelling</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:20%"></div></div>
+    <div class="chips">
+      <span class="chip">DC motor model</span><span class="chip">electrical + mechanical dynamics</span>
+      <span class="chip">z-transform</span><span class="chip">discretisation</span>
+      <span class="chip">ZOH method</span><span class="chip">bilinear transform</span><span class="chip">PWM generation</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">DC motor transfer function</div>
+        <div class="item">Electrical: V = L(di/dt) + Ri + Keω</div>
+        <div class="item">Mechanical: J(dω/dt) = Kt·i − B·ω − TL</div>
+        <div class="item">Combined: Ω(s)/V(s) = Kt / ((Ls+R)(Js+B) + KtKe)<span class="isub">This is your plant. Simulate it. Know its poles. Control everything else around it.</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Nise Ch. 4–5: time-response specs — rise time, settling time, overshoot, steady-state error</div>
+        <div class="item">Mann Ch. 1–3: discrete-time systems, z-transform, difference equations<span class="isub">Critical: your MCU runs in discrete time, not continuous. This chapter bridges the gap.</span></div>
+        <div class="item">Twomey Ch. 4–5: PWM generation, H-bridge motor drivers, dead-time</div>
+      </div>
+    </div>
+<pre>
+# DC motor simulation — build this model, use it all phase
+from scipy import signal
+import numpy as np, matplotlib.pyplot as plt
+
+# Typical small DC motor parameters
+R  = 2.0      # armature resistance (Ω)
+L  = 0.5e-3   # armature inductance (H)
+Kt = 0.1      # torque constant (Nm/A)
+Ke = 0.1      # back-EMF constant (V·s/rad)
+J  = 1e-4     # rotor inertia (kg·m²)
+B  = 1e-3     # viscous friction (Nm·s/rad)
+
+# Transfer function Ω(s)/V(s)
+num = [Kt]
+den = [L*J, L*B + R*J, R*B + Kt*Ke]
+motor = signal.TransferFunction(num, den)
+
+t = np.linspace(0, 0.5, 5000)
+t, y = signal.step(motor, T=t)
+plt.plot(t, y)
+plt.xlabel('Time (s)'); plt.ylabel('Speed (rad/s)')
+plt.title(f'DC motor open-loop step (1V)\nSS speed = {y[-1]:.1f} rad/s')
+plt.show()
+
+# Exercises:
+# 1. Final Value Theorem: SS speed = lim(s→0) s·G(s)/s = Kt/(R·B + Kt·Ke)
+# 2. Increase R: what happens to SS speed and response time?
+# 3. Increase J: what happens to settling time?
+print(f"Theoretical SS speed: {Kt/(R*B + Kt*Ke):.2f} rad/s")
+</pre>
+    <div class="slabel">STM32 PWM setup — verify on oscilloscope before connecting any motor</div>
+<pre>
+/* Centre-aligned PWM — required for FOC later (symmetrical sampling)
+   20kHz switching frequency on 168MHz clock:
+   ARR = 168,000,000 / (2 × 20,000) = 4200                         */
+
+TIM1->CR1  |= TIM_CR1_CMS_0;       /* centre-aligned mode 1        */
+TIM1->ARR   = 4200 - 1;             /* auto-reload for 20kHz        */
+TIM1->CCR1  = 2100;                 /* 50% duty cycle               */
+TIM1->BDTR |= TIM_BDTR_MOE;         /* main output enable           */
+
+/* Dead-time: prevent shoot-through in the half-bridge
+   DTG[7:0] field in BDTR. At 168MHz, 1 count = ~6ns.
+   Set to ~100ns minimum (DT = 17 counts):                          */
+TIM1->BDTR |= (17u << TIM_BDTR_DTG_Pos);
+
+/* VERIFY ON OSCILLOSCOPE BEFORE CONNECTING GATE DRIVER:
+   - Correct frequency (20kHz)
+   - Complementary outputs (CH1 and CH1N) are inverted
+   - Dead time visible between complementary transitions            */
+</pre>
+  </div>
+
+  <!-- W3 -->
+  <div class="week-panel" id="w2">
+    <div class="week-header">
+      <h2 class="week-title">Week 3 — PID controller theory and simulation</h2>
+      <span class="badge badge-phase">Core Theory</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:30%"></div></div>
+    <div class="chips">
+      <span class="chip">P I D effects</span><span class="chip">Ziegler-Nichols</span>
+      <span class="chip">anti-windup</span><span class="chip">derivative filtering</span>
+      <span class="chip">discrete PID</span><span class="chip">derivative kick</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Nise Ch. 9: PID controller design, effect of each term on root locus</div>
+        <div class="item">Mann Ch. 4–5: discrete PID, derivative on measurement, anti-windup<span class="isub">Read this chapter twice. The implementation details here matter enormously in practice.</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Three anti-windup strategies</div>
+        <div class="item"><strong>Clamping:</strong> stop integrating when saturated and error has same sign as output<span class="isub">Simplest. Works well for most cases. Use this first.</span></div>
+        <div class="item"><strong>Back-calculation:</strong> feed saturation difference back through gain Kt<span class="isub">Smoother recovery. One extra tuning parameter.</span></div>
+        <div class="item"><strong>Integrator freeze:</strong> halt integrator entirely during saturation</div>
+      </div>
+    </div>
+    <div class="slabel">Discrete PID — Python class (then translate verbatim to C)</div>
+<pre>
+class DiscretePID:
+    def __init__(self, Kp, Ki, Kd, Ts, out_min, out_max, N=10.0):
+        self.Kp, self.Ki, self.Kd = Kp, Ki * Ts, Kd / Ts
+        self.N = N
+        self.out_min, self.out_max = out_min, out_max
+        self.integrator   = 0.0
+        self.differentiator = 0.0
+        self.prev_meas    = 0.0
+
+    def update(self, setpoint, measurement):
+        error = setpoint - measurement
+
+        # Proportional
+        P = self.Kp * error
+
+        # Integral with clamping anti-windup
+        I_candidate = self.integrator + self.Ki * error
+        if (P + I_candidate) < self.out_max and (P + I_candidate) > self.out_min:
+            self.integrator = I_candidate   # only integrate if not saturated
+
+        # Derivative on MEASUREMENT — avoids derivative kick on setpoint step
+        # First-order IIR filter: reduces high-frequency noise amplification
+        self.differentiator = (self.N * self.Kd * (self.prev_meas - measurement)
+                               + self.differentiator * (1.0 - self.N * (1.0/10.0)))
+        self.prev_meas = measurement
+
+        output = P + self.integrator + self.differentiator
+        return max(self.out_min, min(self.out_max, output))
+
+# Test on DC motor simulation — run a closed-loop step response
+# Tune Kp, Ki, Kd manually to achieve &lt;5% overshoot, &lt;100ms settling
+</pre>
+    <div class="slabel">Tuning order — always follow this sequence</div>
+    <div class="card">
+      <div class="item"><strong>Step 1 — P only:</strong> Ki=0, Kd=0. Increase Kp until response is fast but with some overshoot (~20–30%). System stable.</div>
+      <div class="item"><strong>Step 2 — Add I:</strong> increase Ki until steady-state error is eliminated. Watch for oscillation — reduce Ki if it appears.</div>
+      <div class="item"><strong>Step 3 — Add D:</strong> increase Kd to damp overshoot. Kd is sensitive to noise — use the derivative filter (N parameter).</div>
+      <div class="item"><strong>Never tune all three simultaneously.</strong> You will not find the problem when something goes wrong.</div>
+    </div>
+  </div>
+
+  <!-- W4 -->
+  <div class="week-panel" id="w3">
+    <div class="week-header">
+      <h2 class="week-title">Week 4 — First real PID loop on hardware</h2>
+      <span class="badge badge-phase" style="border-color:#1a5c3a;background:#071a10;color:var(--accent)">First Hardware Milestone</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:40%"></div></div>
+    <div class="alert" style="border-color:var(--orange);background:#1a0e07;margin-bottom:12px">
+      <div class="alert-title" style="color:var(--orange)">Simulation first, hardware second — always</div>
+      Before connecting to any motor, verify your PID C code on the Python simulation model.
+      If it works on the model, hardware commissioning is only parameter adjustment.
+      If you skip simulation, you won't know if a problem is your algorithm or your wiring.
+    </div>
+    <div class="chips">
+      <span class="chip">encoder interface</span><span class="chip">velocity estimation</span>
+      <span class="chip">timer interrupt loop</span><span class="chip">fixed-point math</span>
+      <span class="chip">control loop timing</span><span class="chip">scope-based tuning</span>
+    </div>
+    <div class="slabel">C PID implementation</div>
+<pre>
+typedef struct {
+    float Kp, Ki, Kd, Ts, N;
+    float out_min, out_max;
+    float integrator;
+    float differentiator;
+    float prev_measurement;
+} PID_t;
+
+void PID_Init(PID_t *p, float Kp, float Ki, float Kd,
+              float Ts, float N, float lo, float hi) {
+    p->Kp = Kp; p->Ki = Ki * Ts; p->Kd = Kd / Ts;
+    p->N = N; p->Ts = Ts; p->out_min = lo; p->out_max = hi;
+    p->integrator = p->differentiator = p->prev_measurement = 0.0f;
+}
+
+float PID_Update(PID_t *p, float setpoint, float measurement) {
+    float error = setpoint - measurement;
+    float P = p->Kp * error;
+
+    /* Integral with clamping anti-windup */
+    float I_new = p->integrator + p->Ki * error;
+    float out_unsat = P + I_new;
+    if (out_unsat >= p->out_min &amp;&amp; out_unsat &lt;= p->out_max)
+        p->integrator = I_new;
+
+    /* Derivative on measurement — no kick, filtered */
+    p->differentiator = p->N * p->Kd * (p->prev_measurement - measurement)
+                      + p->differentiator * (1.0f - p->N * p->Ts);
+    p->prev_measurement = measurement;
+
+    float out = P + p->integrator + p->differentiator;
+    if (out > p->out_max) out = p->out_max;
+    if (out &lt; p->out_min) out = p->out_min;
+    return out;
+}
+
+/* Fixed-rate control loop — TIM6 at exactly 1kHz */
+void TIM6_DAC_IRQHandler(void) {
+    TIM6->SR &amp;= ~TIM_SR_UIF;
+    uint32_t t0 = DWT->CYCCNT;
+
+    float speed = Encoder_GetVelocityRad();
+    float duty  = PID_Update(&amp;g_speed_pid, g_setpoint, speed);
+    PWM_SetDutyCycle(duty);
+
+    uint32_t dt_us = (DWT->CYCCNT - t0) / (SystemCoreClock / 1000000);
+    if (dt_us > g_max_loop_us) g_max_loop_us = dt_us; /* log WCET */
+}
+</pre>
+    <div class="slabel">Velocity estimation — two methods</div>
+    <div class="card">
+      <div class="item"><strong>Fixed-period:</strong> count encoder pulses in fixed time window. v = Δcounts × (2π/PPR) / Ts<span class="isub">Good at high speed. Poor resolution at low speed (few pulses per window).</span></div>
+      <div class="item"><strong>Fixed-pulse:</strong> measure time between encoder pulses using input capture. v = (2π/PPR) / Δt<span class="isub">Good at low speed. Poor at high speed (timer overflows). Combine both: switch based on measured speed.</span></div>
+    </div>
+    <div class="slabel">Week 4 milestone</div>
+    <div class="card card-green">
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>DC motor speed PID running at 1kHz on STM32<span class="ms-sub">Scope trace of step response before and after tuning — saved to GitHub</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Python logging script: real-time speed plot from 1kHz UART telemetry</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Control loop WCET measured: completes in &lt;200µs at 1kHz sample rate</div></div>
+    </div>
+  </div>
+
+  <!-- W5 -->
+  <div class="week-panel" id="w4">
+    <div class="week-header">
+      <h2 class="week-title">Week 5 — Stability: Bode plots and frequency response</h2>
+      <span class="badge badge-phase">Theory</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:50%"></div></div>
+    <div class="chips">
+      <span class="chip">Bode plot</span><span class="chip">gain margin</span>
+      <span class="chip">phase margin</span><span class="chip">stability criteria</span>
+      <span class="chip">bandwidth</span><span class="chip">IIR filter</span><span class="chip">anti-aliasing</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Nise Ch. 8: root locus — how closed-loop poles move as gain changes</div>
+        <div class="item">Nise Ch. 10: frequency response — Bode plots, gain and phase margin<span class="isub">Learn to sketch Bode plots by hand from a transfer function. This is an interview skill.</span></div>
+        <div class="item">Twomey Ch. 9–10: noise filtering, IIR digital filters, anti-aliasing</div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Stability margins — practical meaning</div>
+        <div class="item"><strong>Gain margin:</strong> how much you can increase Kp before instability. Target: GM &gt; 6 dB.</div>
+        <div class="item"><strong>Phase margin:</strong> how much phase lag you can add before instability. Target: PM = 45–60°.<span class="isub">Less than 30°: oscillatory. More than 80°: sluggish. 45–60° is the engineering sweet spot.</span></div>
+        <div class="item">Increasing Kp reduces phase margin. Derivative adds phase (good). Integral subtracts phase at high frequencies (bad).</div>
+      </div>
+    </div>
+<pre>
+# Bode analysis of motor + PID open-loop system
+import control, numpy as np, matplotlib.pyplot as plt
+
+# Motor parameters (from Week 2)
+R, L, Kt, Ke, J, B = 2.0, 0.5e-3, 0.1, 0.1, 1e-4, 1e-3
+
+motor = control.tf([Kt], [L*J, L*B + R*J, R*B + Kt*Ke])
+
+# Tuned PID (continuous approximation for analysis)
+Kp, Ki, Kd = 2.0, 50.0, 0.01
+pid = control.tf([Kd, Kp, Ki], [1, 0])
+
+OL = pid * motor   # open-loop
+
+# Bode plot
+mag, phase, omega = control.bode(OL, plot=True)
+
+# Stability margins
+gm, pm, wg, wp = control.margin(OL)
+print(f"Gain margin:  {20*np.log10(gm):.1f} dB  at {wg:.1f} rad/s")
+print(f"Phase margin: {pm:.1f} deg  at {wp:.1f} rad/s")
+# If PM &lt; 30: increase Kd or reduce Kp
+# If PM &gt; 80: you can increase Kp for faster response
+</pre>
+    <div class="slabel">IIR velocity filter — implement in C alongside PID</div>
+<pre>
+/* First-order IIR (exponential moving average)
+   alpha = Ts / (Ts + 1/(2*pi*fc))
+   fc  = cutoff frequency in Hz — typically bandwidth/5 to bandwidth/10
+   Ts  = sample period
+   Rule: too low alpha = smooth but laggy. Too high = noisy but responsive. */
+
+#define FILTER_ALPHA   0.15f
+
+static float s_vel_filtered = 0.0f;
+
+/* Called every control loop tick, before PID_Update() */
+float Filter_Velocity(float raw) {
+    s_vel_filtered = FILTER_ALPHA * raw
+                   + (1.0f - FILTER_ALPHA) * s_vel_filtered;
+    return s_vel_filtered;
+}
+/* Plot raw vs filtered in Python. Find the alpha that removes noise
+   without adding more than ~5ms of additional lag to your control loop. */
+</pre>
+  </div>
+
+  <!-- W6 -->
+  <div class="week-panel" id="w5">
+    <div class="week-header">
+      <h2 class="week-title">Week 6 — BLDC motor fundamentals and trapezoidal commutation</h2>
+      <span class="badge badge-phase">Hardware</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:60%"></div></div>
+    <div class="alert" style="border-color:var(--orange);background:#1a0e07;margin-bottom:12px">
+      <div class="alert-title" style="color:var(--orange)">Build trapezoidal before attempting FOC</div>
+      FOC is built on the same hardware and ISR infrastructure as trapezoidal.
+      Getting trapezoidal working first gives you a verified platform — correct PWM switching,
+      working current sensing, correct gate driver behaviour — before adding the mathematical
+      complexity of Clarke/Park. Skipping straight to FOC leads to weeks of confounded debugging.
+    </div>
+    <div class="chips">
+      <span class="chip">back-EMF</span><span class="chip">electrical vs mechanical angle</span>
+      <span class="chip">Hall sensors</span><span class="chip">6-step commutation</span>
+      <span class="chip">commutation table</span><span class="chip">dead-time</span><span class="chip">gate driver</span>
+    </div>
+    <div class="slabel">Commutation table</div>
+<pre>
+/* Hall sensor state (3-bit) → which phases are HIGH / LOW / floating
+   Read Hall A, B, C from GPIO. Combine into a 3-bit index.
+   Verify rotation direction — swap two phase wires if reversed.      */
+
+typedef struct { uint8_t hi; uint8_t lo; uint8_t off; } CommStep_t;
+
+/* Phases: 0=U, 1=V, 2=W */
+static const CommStep_t COMM_FWD[8] = {
+    {0,0,0},        /* 0b000 — invalid */
+    {2, 1, 0},      /* Hall=1: W+  V-  U float */
+    {0, 2, 1},      /* Hall=2: U+  W-  V float */
+    {0, 1, 2},      /* Hall=3: U+  V-  W float */
+    {1, 0, 2},      /* Hall=4: V+  U-  W float */
+    {2, 0, 1},      /* Hall=5: W+  U-  V float */
+    {1, 2, 0},      /* Hall=6: V+  W-  U float */
+    {0,0,0},        /* 0b111 — invalid */
+};
+
+/* Called from Hall sensor EXTI interrupt */
+void Hall_EXTI_Handler(void) {
+    uint8_t hall = (GPIOA->IDR >> HALL_PIN_OFFSET) &amp; 0x7u;
+    if (hall == 0 || hall == 7) { Enter_Fault(FAULT_ENCODER); return; }
+    CommStep_t s = COMM_FWD[hall];
+    Apply_Commutation(s.hi, s.lo, s.off, g_duty);
+}
+
+void Apply_Commutation(uint8_t hi, uint8_t lo, uint8_t off, uint16_t duty) {
+    /* Set PWM duty on high-side, enable low-side, tri-state floating phase */
+    for (uint8_t ph = 0; ph &lt; 3; ph++) {
+        if (ph == hi)       { Phase_SetPWM(ph, duty); }
+        else if (ph == lo)  { Phase_SetLow(ph); }
+        else                { Phase_SetHiZ(ph); }
+    }
+}
+</pre>
+    <div class="slabel">Daily exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Verify gate driver in isolation: no motor. Apply PWM to inputs. Measure gate drive waveforms. Verify dead-time on complementary outputs. Do NOT connect motor until waveforms are clean.</div>
+      <div class="item"><span class="day">Tue</span>Read Hall sensors: configure EXTI on 3 GPIO pins. Manually rotate shaft by hand. Log all 6 valid Hall states in correct sequence. Fix wiring if sequence is wrong.</div>
+      <div class="item"><span class="day">Wed</span>Apply commutation table at fixed low duty cycle (10–15%). Motor should rotate slowly and smoothly. Jerking or vibration = wrong table ordering for this motor.</div>
+      <div class="item"><span class="day">Thu</span>Add outer speed PID loop. Speed feedback from Hall edge timing. Control output drives duty cycle. Start with P only.</div>
+      <div class="item"><span class="day">Fri</span>Add current limiting: read phase current via ADC every cycle. If current exceeds limit, immediately reduce duty. Test by stalling motor by hand — current must clamp, not spike.</div>
+      <div class="item"><span class="day">Sat</span>Observe back-EMF on floating phase with oscilloscope. Verify sinusoidal waveform proportional to speed. This validates motor understanding.</div>
+    </div>
+  </div>
+
+  <!-- W7 -->
+  <div class="week-panel" id="w6">
+    <div class="week-header">
+      <h2 class="week-title">Week 7 — FOC fundamentals: Clarke, Park, and simulation</h2>
+      <span class="badge badge-phase">FOC Theory</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:70%"></div></div>
+    <div class="chips">
+      <span class="chip">reference frames</span><span class="chip">Clarke transform</span>
+      <span class="chip">Park transform</span><span class="chip">d-q axis</span>
+      <span class="chip">Id vs Iq</span><span class="chip">Inverse Park</span><span class="chip">SVPWM</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">The FOC idea — before the math</div>
+        <div class="item">3-phase currents in a running motor are sinusoidal and rotating. Impossible to PID-control directly — the reference keeps changing.</div>
+        <div class="item">FOC rotates a coordinate frame to follow the rotor. In this rotating frame, currents appear as DC values.</div>
+        <div class="item">Now two independent PID controllers work on DC quantities: Id (flux, set to 0) and Iq (torque, commanded by speed loop).</div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Transform chain — memorise this</div>
+        <div class="item">1. Measure Ia, Ib → compute Ic = −(Ia+Ib)</div>
+        <div class="item">2. Clarke: (Ia, Ib, Ic) → (Iα, Iβ) — stationary 2D</div>
+        <div class="item">3. Park: (Iα, Iβ, θe) → (Id, Iq) — rotating, aligned to rotor</div>
+        <div class="item">4. Two PIDs: Id→Vd, Iq→Vq</div>
+        <div class="item">5. Inv. Park: (Vd, Vq, θe) → (Vα, Vβ)</div>
+        <div class="item">6. SVPWM: (Vα, Vβ) → PWM duty cycles for 3 phases</div>
+      </div>
+    </div>
+    <div class="slabel">Clarke and Park — Python implementation and verification</div>
+<pre>
+import numpy as np, matplotlib.pyplot as plt
+
+def clarke(Ia, Ib, Ic):
+    """3-phase → 2-phase stationary (alpha-beta)"""
+    Ialpha = Ia
+    Ibeta  = (Ia + 2*Ib) / np.sqrt(3)
+    return Ialpha, Ibeta
+
+def park(Ialpha, Ibeta, theta):
+    """Stationary → rotating (d-q)"""
+    Id =  Ialpha * np.cos(theta) + Ibeta * np.sin(theta)
+    Iq = -Ialpha * np.sin(theta) + Ibeta * np.cos(theta)
+    return Id, Iq
+
+def inv_park(Vd, Vq, theta):
+    Valpha = Vd * np.cos(theta) - Vq * np.sin(theta)
+    Vbeta  = Vd * np.sin(theta) + Vq * np.cos(theta)
+    return Valpha, Vbeta
+
+# Verification: sinusoidal 3-phase → should become DC in d-q frame
+t       = np.linspace(0, 0.1, 1000)
+omega_e = 2 * np.pi * 50     # 50 Hz electrical
+theta   = omega_e * t
+I_peak  = 5.0
+
+Ia = I_peak * np.cos(theta)
+Ib = I_peak * np.cos(theta - 2*np.pi/3)
+Ic = I_peak * np.cos(theta + 2*np.pi/3)
+
+Ialpha, Ibeta = clarke(Ia, Ib, Ic)
+Id, Iq        = park(Ialpha, Ibeta, theta)
+
+print(f"Id mean={np.mean(Id):.3f}  std={np.std(Id):.5f}  (expect: mean≈{I_peak}, std≈0)")
+print(f"Iq mean={np.mean(Iq):.3f}  std={np.std(Iq):.5f}  (expect: mean≈0,      std≈0)")
+# If transforms are correct, sinusoids become flat DC lines
+</pre>
+    <div class="slabel">Space vector PWM — simplified implementation</div>
+<pre>
+def svpwm(Valpha, Vbeta, Vdc):
+    """Alpha-beta voltages → 3-phase duty cycles [0, 1]"""
+    Va =  Valpha
+    Vb = -0.5*Valpha + (np.sqrt(3)/2)*Vbeta
+    Vc = -0.5*Valpha - (np.sqrt(3)/2)*Vbeta
+    # Zero-sequence injection for maximum DC bus utilisation
+    V_min = np.minimum(np.minimum(Va, Vb), Vc)
+    V_max = np.maximum(np.maximum(Va, Vb), Vc)
+    V_off = (V_max + V_min) / 2
+    Ta = (Va - V_off) / Vdc + 0.5
+    Tb = (Vb - V_off) / Vdc + 0.5
+    Tc = (Vc - V_off) / Vdc + 0.5
+    return np.clip(Ta, 0, 1), np.clip(Tb, 0, 1), np.clip(Tc, 0, 1)
+
+# Exercise: for a full electrical revolution, plot Ta, Tb, Tc vs theta
+# Expected: three sinusoidal duty cycles, 120° apart, offset to [0,1]
+</pre>
+    <div class="slabel">Reference materials for this week</div>
+    <div class="card card-blue">
+      <div class="item" style="color:var(--blue)">ST Application Note AN4220: "FOC Library for STM32" — free download at st.com<span class="isub" style="color:var(--blue)">Covers full STM32-optimised FOC implementation in C. Read alongside your own implementation.</span></div>
+      <div class="item" style="color:var(--blue)">Phil's Lab (YouTube): FOC implementation series on STM32 — watch the full playlist this week<span class="isub" style="color:var(--blue)">He implements from scratch, same path you're taking. Excellent complementary resource.</span></div>
+    </div>
+  </div>
+
+  <!-- W8 -->
+  <div class="week-panel" id="w7">
+    <div class="week-header">
+      <h2 class="week-title">Week 8 — FOC hardware implementation</h2>
+      <span class="badge badge-phase">FOC Hardware</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:80%"></div></div>
+    <div class="alert" style="border-color:var(--red);background:#1a0707;margin-bottom:12px">
+      <div class="alert-title" style="color:var(--red)">Current sensing timing is the hardest hardware detail in FOC</div>
+      Sample phase currents at the PWM centre point (centre-aligned mode, sample at counter peak).
+      This is when switching noise has settled and current equals its average value.
+      Wrong timing → wrong current measurement → PID instability.
+      Configure STM32 ADC trigger from TIM1 TRGO (update event = counter peak in centre-aligned mode).
+    </div>
+    <div class="chips">
+      <span class="chip">ADC triggered by PWM</span><span class="chip">Q15 fixed-point</span>
+      <span class="chip">sin/cos LUT</span><span class="chip">inner current loop</span>
+      <span class="chip">20kHz loop timing</span><span class="chip">ISR budget</span>
+    </div>
+    <div class="slabel">Q15 Clarke and Park in C</div>
+<pre>
+/* Q15: range [-1.0, +1.0) mapped to [-32768, 32767]
+   Intermediate products use int32_t to avoid overflow  */
+typedef int16_t q15_t;
+typedef int32_t q31_t;
+#define Q15(x)        ((q15_t)((x) * 32767.0f))
+#define Q15_MUL(a,b)  ((q15_t)(((q31_t)(a) * (b)) >> 15))
+
+/* 256-entry sin/cos LUT — pre-computed at startup or in flash */
+/* Index by electrical angle: angle_idx = (theta_elec * 256) / (2*pi) */
+static const q15_t SIN_LUT[256] = { /* ... generated values ... */ };
+static inline q15_t q15_sin(uint8_t idx) { return SIN_LUT[idx]; }
+static inline q15_t q15_cos(uint8_t idx) { return SIN_LUT[(idx + 64) &amp; 0xFF]; }
+
+void Clarke_Q15(q15_t Ia, q15_t Ib, q15_t *Ialpha, q15_t *Ibeta) {
+    *Ialpha = Ia;
+    /* Ibeta = (Ia + 2*Ib) / sqrt(3) = 0.57735*Ia + 1.15470*Ib */
+    *Ibeta = Q15_MUL(Q15(0.57735f), Ia) + Q15_MUL(Q15(1.15470f), Ib);
+}
+
+void Park_Q15(q15_t Ialpha, q15_t Ibeta, uint8_t theta_idx,
+              q15_t *Id, q15_t *Iq) {
+    q15_t c = q15_cos(theta_idx);
+    q15_t s = q15_sin(theta_idx);
+    *Id =  Q15_MUL(Ialpha, c) + Q15_MUL(Ibeta,  s);
+    *Iq = -Q15_MUL(Ialpha, s) + Q15_MUL(Ibeta,  c);
+}
+
+/* FOC ISR — runs at 20kHz, triggered by ADC (= PWM centre) */
+void ADC1_2_IRQHandler(void) {
+    /* Total budget: &lt;40µs at 20kHz (50µs period) */
+    q15_t Ia = ADC_ReadPhaseA();
+    q15_t Ib = ADC_ReadPhaseB();
+    /* Ic = -(Ia+Ib) by KCL — no third sensor needed */
+
+    q15_t Ialpha, Ibeta, Id, Iq;
+    Clarke_Q15(Ia, Ib, &amp;Ialpha, &amp;Ibeta);
+
+    uint8_t theta_idx = Encoder_GetElecAngle256();  /* electrical angle */
+    Park_Q15(Ialpha, Ibeta, theta_idx, &amp;Id, &amp;Iq);
+
+    float Vd = PID_Update(&amp;g_id_pid, 0.0f, Id / 32767.0f);  /* Id ref = 0 */
+    float Vq = PID_Update(&amp;g_iq_pid, g_Iq_ref, Iq / 32767.0f);
+
+    float Valpha, Vbeta;
+    InvPark(Vd, Vq, theta_idx, &amp;Valpha, &amp;Vbeta);
+    SVPWM_Update(Valpha, Vbeta, VDC);
+}
+</pre>
+    <div class="slabel">Step-by-step build sequence</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Implement Clarke in C. Feed known test currents from ADC (or inject via calculation). Compare Q15 output with Python simulation values. Must match within 1%.</div>
+      <div class="item"><span class="day">Tue</span>Implement sin/cos LUT and Park transform. Verify with same test vectors. Park at θ=0 should return (Iα, 0).</div>
+      <div class="item"><span class="day">Wed</span>Implement SVPWM. Verify duty cycles with oscilloscope: three sinusoidal waveforms, 120° apart. No motor connected yet.</div>
+      <div class="item"><span class="day">Thu</span>Connect all transforms in ADC ISR at 1kHz first (not 20kHz). Verify motor rotates smoothly. If not: angle sign error or transform ordering bug.</div>
+      <div class="item"><span class="day">Fri</span>Increase rate to 10kHz, then 20kHz. Measure ISR execution time at each step with DWT_CYCCNT. Optimise if over budget.</div>
+      <div class="item"><span class="day">Sat</span>Tune inner current PID loops. Target current loop bandwidth 1–5kHz. Verify with step response: step Iq, measure current rise time on scope.</div>
+    </div>
+  </div>
+
+  <!-- W9 -->
+  <div class="week-panel" id="w8">
+    <div class="week-header">
+      <h2 class="week-title">Week 9 — Full FOC with cascade speed loop</h2>
+      <span class="badge badge-phase" style="border-color:#1a5c3a;background:#071a10;color:var(--accent)">FOC Milestone</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:90%"></div></div>
+    <div class="chips">
+      <span class="chip">cascade control</span><span class="chip">bandwidth separation</span>
+      <span class="chip">ramp generator</span><span class="chip">torque mode</span>
+      <span class="chip">FreeRTOS integration</span><span class="chip">telemetry</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Cascade structure</div>
+        <div class="item"><strong>Inner loop:</strong> Id and Iq PIDs at 20kHz. Bandwidth 1–5kHz.</div>
+        <div class="item"><strong>Outer loop:</strong> speed PID at 1kHz. Output = Iq setpoint. Bandwidth 50–200Hz.</div>
+        <div class="item"><strong>Rule:</strong> inner loop must be ≥5× faster than outer loop.<span class="isub">If inner is too slow, outer loop sees it as a lag and becomes unstable.</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Tuning order</div>
+        <div class="item">1. Tune inner current loops first. Outer loop disabled. Step Iq directly.<span class="isub">Target: &lt;1ms current step, &lt;5% overshoot</span></div>
+        <div class="item">2. Enable outer speed loop only after inner is stable. P only first.<span class="isub">Target: &lt;50ms speed step, &lt;10% overshoot</span></div>
+        <div class="item">3. Add ramp generator before speed setpoint. Limits acceleration rate to protect motor from current spikes.</div>
+      </div>
+    </div>
+    <div class="slabel">Ramp generator and FreeRTOS task structure</div>
+<pre>
+/* Ramp generator — limits rate of change of speed setpoint */
+typedef struct { float output; float max_rate; float Ts; } Ramp_t;
+
+float Ramp_Update(Ramp_t *r, float target) {
+    float max_step = r->max_rate * r->Ts;
+    float err = target - r->output;
+    if      (err >  max_step) r->output += max_step;
+    else if (err &lt; -max_step) r->output -= max_step;
+    else                      r->output  = target;
+    return r->output;
+}
+
+/* FreeRTOS task hierarchy */
+/* ADC ISR (not a task): 20kHz — Clarke→Park→Id/Iq PID→InvPark→SVPWM
+   Posts speed measurement to queue every 20 cycles (1kHz)          */
+
+void SpeedControl_Task(void *pv) {        /* Priority 6 (highest task) */
+    float speed;
+    while (1) {
+        xQueueReceive(g_speed_q, &amp;speed, portMAX_DELAY);
+        float ramped = Ramp_Update(&amp;g_ramp, g_speed_setpoint);
+        float Iq_ref = PID_Update(&amp;g_speed_pid, ramped, speed);
+        taskENTER_CRITICAL();
+        g_Iq_ref = Iq_ref;    /* atomic write — ISR reads this */
+        taskEXIT_CRITICAL();
+    }
+}
+
+void FaultMonitor_Task(void *pv) {        /* Priority 5 */
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(1));
+        Check_Overcurrent();
+        Check_Overvoltage();
+        Check_Temperature();
+        Check_Encoder();
+    }
+}
+
+void Telemetry_Task(void *pv) {           /* Priority 2 */
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(10));    /* 100Hz */
+        CAN_Transmit_State(g_speed, g_Iq_ref, g_temp, g_fault_code);
+    }
+}
+</pre>
+    <div class="slabel">Week 9 milestone</div>
+    <div class="card card-green">
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Full cascade FOC: 20kHz inner current loop + 1kHz outer speed loop<span class="ms-sub">Phase currents sinusoidal on scope. Speed response smooth with ramp generator.</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Python telemetry: real-time speed, Id, Iq, duty cycle plots from UART/CAN logging</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Torque mode: direct Iq command from potentiometer input</div></div>
+    </div>
+  </div>
+
+  <!-- W10 -->
+  <div class="week-panel" id="w9">
+    <div class="week-header">
+      <h2 class="week-title">Week 10 — Fault protection, CAN bus, Phase 3 capstone</h2>
+      <span class="badge badge-phase" style="border-color:#1a5c3a;background:#071a10;color:var(--accent)">Capstone</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:100%"></div></div>
+    <div class="chips">
+      <span class="chip">3-layer fault protection</span><span class="chip">hardware comparator</span>
+      <span class="chip">fault state machine</span><span class="chip">thermal derating</span>
+      <span class="chip">CAN 2.0B</span><span class="chip">CAN frame design</span>
+    </div>
+    <div class="slabel">3-layer fault protection hierarchy</div>
+    <div class="card">
+      <div class="item"><strong>Layer 1 — Hardware (fastest):</strong> analog comparator output connected to gate driver nFAULT/ENABLE pin. Fires in nanoseconds. No software involved. Must be present.<span class="isub">DRV8323: configure OCP threshold via SPI. Hardware disables gate drives immediately on overcurrent.</span></div>
+      <div class="item"><strong>Layer 2 — ISR (fast):</strong> ADC current check every 50µs (20kHz). If current exceeds software limit: TIM1->BDTR &amp;= ~TIM_BDTR_MOE (immediate PWM disable).<span class="isub">Catches sustained overcurrent that hardware threshold allows. Also detects phase current imbalance.</span></div>
+      <div class="item"><strong>Layer 3 — Task (slow, comprehensive):</strong> FaultMonitor_Task at 1kHz. Checks voltages, temperature, encoder validity, watchdog heartbeats, CAN timeout.<span class="isub">Handles thermal derating, undervoltage lockout, encoder fault, communication watchdog.</span></div>
+    </div>
+    <div class="slabel">Fault state machine and thermal derating</div>
+<pre>
+typedef enum {
+    MSTATE_INIT, MSTATE_READY, MSTATE_RUNNING,
+    MSTATE_FAULT, MSTATE_FAULT_LATCH
+} MotorState_t;
+
+typedef enum {
+    FAULT_NONE         = 0,
+    FAULT_OVERCURRENT  = (1u &lt;&lt; 0),
+    FAULT_OVERVOLTAGE  = (1u &lt;&lt; 1),
+    FAULT_UNDERVOLTAGE = (1u &lt;&lt; 2),
+    FAULT_OVERTEMP     = (1u &lt;&lt; 3),
+    FAULT_ENCODER      = (1u &lt;&lt; 4),
+    FAULT_WATCHDOG     = (1u &lt;&lt; 5),
+} FaultCode_t;
+
+void Enter_Fault(FaultCode_t code) {
+    /* Step 1: disable PWM immediately (atomic — no IRQ needed) */
+    __disable_irq();
+    TIM1->BDTR &amp;= ~TIM_BDTR_MOE;
+    __enable_irq();
+
+    g_fault_code   |= code;
+    g_motor_state   = MSTATE_FAULT_LATCH;
+
+    /* Step 2: log to backup SRAM (survives reset) */
+    BKPSRAM->fault_code  = g_fault_code;
+    BKPSRAM->fault_speed = g_speed;
+    BKPSRAM->fault_Iq    = g_Iq_ref;
+    BKPSRAM->valid       = 0xDEADBEEF;
+
+    /* Step 3: report over CAN */
+    CAN_Send_FaultFrame(g_fault_code);
+}
+
+/* Thermal derating — reduce max Iq as temperature rises */
+float Thermal_GetMaxIq(float temp_C) {
+    const float T_NOMINAL = 60.0f;
+    const float T_MAX     = 100.0f;
+    const float IQ_MAX    = 10.0f;
+    if (temp_C &lt;= T_NOMINAL) return IQ_MAX;
+    if (temp_C >= T_MAX)     return 0.0f;
+    return IQ_MAX * (1.0f - (temp_C - T_NOMINAL) / (T_MAX - T_NOMINAL));
+}
+/* Apply in inner loop: Iq_clamped = fminf(Iq_ref, Thermal_GetMaxIq(temp)) */
+</pre>
+    <div class="slabel">CAN bus message design</div>
+<pre>
+/* CAN frame IDs — define all at once for the whole system */
+#define CAN_ID_MOTOR_STATE   0x100u  /* speed, Iq, Id, duty — 100Hz */
+#define CAN_ID_THERMAL       0x101u  /* motor_temp, driver_temp     — 10Hz  */
+#define CAN_ID_FAULT         0x102u  /* fault_code, fault_speed     — on event */
+#define CAN_ID_CMD_SPEED     0x200u  /* setpoint command from host  — up to 1kHz */
+
+typedef struct __attribute__((packed)) {
+    int16_t  speed_rpm;     /* current speed */
+    int16_t  Iq_mA;         /* torque-producing current * 1000 */
+    int16_t  Id_mA;         /* flux current * 1000 */
+    uint8_t  duty_pct;      /* PWM duty 0–100 */
+    uint8_t  state;         /* MotorState_t */
+} CAN_MotorState_t;         /* 8 bytes exactly = one CAN frame */
+
+/* Verify with python-can:
+   pip install python-can
+   import can; bus = can.Bus(channel='can0', bustype='socketcan')
+   msg = bus.recv(timeout=1.0)
+   print(hex(msg.arbitration_id), msg.data.hex()) */
+</pre>
+    <div class="slabel">Phase 3 capstone — full deliverable</div>
+    <div class="card card-green">
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>BLDC FOC motor controller — 20kHz current loop + 1kHz speed loop<span class="ms-sub">Clarke/Park in Q15 fixed-point. SVPWM output. Scope traces of sinusoidal phase currents in README.</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>3-layer fault protection: hardware comparator + ISR + FaultMonitor task</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>CAN telemetry: speed, current, temperature, fault codes at 100Hz. python-can monitor script in repo.</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Thermal derating + stall overcurrent protection verified and scope-traced</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>GitHub: architecture diagram, Bode plot of open-loop motor, scope traces, build instructions, demo video</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Fault survival: fault code logged to backup SRAM, reported on next boot over CAN</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  <span>phase 3 of 4 · 10 weeks · 400 hrs</span>
+  <div style="display:flex;gap:20px">
+    <a href="phase2.html">← phase 2</a>
+    <a href="phase4.html">phase 4 →</a>
+  </div>
+</div>
+
+<script>
+function showWeek(n) {
+  document.querySelectorAll('.week-panel').forEach((p,i) => p.classList.toggle('active', i===n));
+  document.querySelectorAll('.wtab').forEach((b,i) => b.classList.toggle('active', i===n));
+}
+</script>
+</body>
+</html>

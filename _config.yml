@@ -1,0 +1,19 @@
+# GitHub Pages configuration
+# This file tells GitHub Pages how to serve the site.
+
+# Disable Jekyll processing entirely — we're serving raw HTML/CSS
+# This prevents Jekyll from choking on {{ }} in code blocks.
+theme: null
+
+# Site metadata (used by GitHub, not rendered directly)
+title: "Embedded Systems Self-Training Programme"
+description: >
+  A structured full-time curriculum for an STM32 support engineer
+  transitioning into embedded software development, specialising in
+  automotive motor control. Covers C architecture, FreeRTOS, control
+  theory, FOC motor control and MISRA-C.
+
+# Exclude files GitHub Pages doesn't need to serve
+exclude:
+  - README.md
+  - "*.zip"

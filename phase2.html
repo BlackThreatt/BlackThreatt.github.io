@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 2 — RTOS | Embedded Training</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .phase-tag { color: var(--purple); }
+  .week-title { color: var(--purple); }
+  .prog-fill { background: var(--purple); }
+  .badge-phase { color: var(--purple); border-color: #3d2a6e; background: #130d26; }
+  .ms-dot-phase { background: var(--purple); }
+  .wtab.active { border-color: var(--purple); color: var(--purple); }
+  .day { border-color: #3d2a6e; color: var(--purple); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="index.html">~/embedded-training</a>
+    <span class="sep">/</span>
+    <span class="current">phase-2</span>
+  </div>
+  <div class="topnav-right">
+    <a href="index.html" class="active">curriculum</a>
+    <a href="about.html">about</a>
+    <a href="blog.html">blog</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="phase-tag">// phase 02 of 04</div>
+  <h1 class="page-title">RTOS and real-time design</h1>
+  <p class="page-subtitle">
+    FreeRTOS internals, IPC primitives, priority inversion, deadlock, DMA integration,
+    LwIP Ethernet, SystemView profiling, and production-grade fault handling.
+    Builds directly on your existing STM32 support experience.
+  </p>
+  <div class="meta-row">
+    <span class="meta-item"><strong>Duration:</strong> 8 weeks</span>
+    <span class="meta-item"><strong>Hours:</strong> ~320 hrs (40/week)</span>
+    <span class="meta-item"><strong>Schedule:</strong> Mon–Sat full time</span>
+    <span class="meta-item"><strong>Capstone:</strong> FreeRTOS sensor fusion node with Ethernet</span>
+  </div>
+</div>
+
+<div class="page-main">
+
+  <div class="slabel">// books for this phase</div>
+  <div class="card" style="margin-bottom:24px">
+    <div class="item"><strong>Hands-On RTOS with Microcontrollers</strong> — Brian Amos<span class="isub">FreeRTOS API, tasks, queues, semaphores, mutexes, timers, event groups. Follow every code example on hardware.</span></div>
+    <div class="item"><strong>Embedded and Real-Time Operating Systems</strong> — K C Wang<span class="isub">Theory underneath the API: scheduling algorithms, priority inversion theory, IPC, memory management.</span></div>
+    <div class="item"><strong>Making Embedded Systems</strong> — Elicia White<span class="isub">Architecture decisions, hardware/software interface, design for testability. Read in parallel — gives the "why".</span></div>
+  </div>
+
+  <div class="slabel">// daily schedule template (mon–fri)</div>
+  <div class="card" style="margin-bottom:24px">
+    <div class="item">08:00 – 10:00 &nbsp;Theory reading — alternate K C Wang (theory) and Amos (FreeRTOS practice) by day<span class="isub">K C Wang gives you the internals. Amos gives you the API. Both matter.</span></div>
+    <div class="item">10:00 – 13:00 &nbsp;FreeRTOS exercises on STM32 — one new RTOS primitive per session</div>
+    <div class="item">14:00 – 16:30 &nbsp;Project work — sensor fusion node, adding one subsystem per week</div>
+    <div class="item">16:30 – 17:30 &nbsp;Debug session — intentionally break things (stack overflow, deadlock, priority inversion) then fix them<span class="isub">This is where your support background becomes a superpower</span></div>
+    <div class="item">Saturday &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Integration + profiling: use Segger SystemView or FreeRTOS trace to visualise task execution</div>
+  </div>
+
+  <div class="slabel">// freertosconfig.h — understand every setting</div>
+<pre>
+configUSE_PREEMPTION              = 1      /* preemptive vs cooperative */
+configUSE_TIME_SLICING            = 1      /* equal-priority tasks share CPU */
+configTICK_RATE_HZ                = 1000  /* 1ms tick — sets timer resolution */
+configMAX_PRIORITIES              = 7      /* don't set too high — wastes RAM */
+configMINIMAL_STACK_SIZE          = 128   /* words (not bytes) on ARM Cortex-M */
+configTOTAL_HEAP_SIZE             = 32768 /* bytes — or use static allocation */
+configCHECK_FOR_STACK_OVERFLOW    = 2     /* ALWAYS on during development */
+configUSE_TRACE_FACILITY          = 1     /* needed for SystemView */
+configUSE_STATS_FORMATTING_FUNCS  = 1     /* vTaskList(), vTaskGetRunTimeStats() */
+configGENERATE_RUN_TIME_STATS     = 1     /* requires a high-res timer */
+configUSE_MUTEXES                 = 1
+configUSE_RECURSIVE_MUTEXES       = 1
+configUSE_COUNTING_SEMAPHORES     = 1
+configUSE_TASK_NOTIFICATIONS      = 1
+configSUPPORT_STATIC_ALLOCATION   = 1     /* set to 1 in Week 5 */
+configSUPPORT_DYNAMIC_ALLOCATION  = 1
+</pre>
+
+  <div class="slabel">// week-by-week</div>
+
+  <div class="week-tabs">
+    <button class="wtab active" onclick="showWeek(0)">Week 1</button>
+    <button class="wtab" onclick="showWeek(1)">Week 2</button>
+    <button class="wtab" onclick="showWeek(2)">Week 3</button>
+    <button class="wtab" onclick="showWeek(3)">Week 4</button>
+    <button class="wtab" onclick="showWeek(4)">Week 5</button>
+    <button class="wtab" onclick="showWeek(5)">Week 6</button>
+    <button class="wtab" onclick="showWeek(6)">Week 7</button>
+    <button class="wtab" onclick="showWeek(7)">Week 8</button>
+  </div>
+
+  <!-- W1 -->
+  <div class="week-panel active" id="w0">
+    <div class="week-header">
+      <h2 class="week-title">Week 1 — RTOS internals and task management</h2>
+      <span class="badge badge-phase">Foundation</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:12%"></div></div>
+    <div class="chips">
+      <span class="chip">TCB — Task Control Block</span><span class="chip">context switching</span>
+      <span class="chip">scheduler internals</span><span class="chip">task states</span>
+      <span class="chip">stack sizing</span><span class="chip">preemption</span><span class="chip">tick interrupt</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">K C Wang Ch. 1–3: what an OS kernel does, process model, context switching<span class="isub">Understand what xTaskCreate() actually allocates and where it lives in RAM</span></div>
+        <div class="item">Amos Ch. 1–4: FreeRTOS setup, task creation, priorities, vTaskDelay<span class="isub">Type every example by hand. No copy-paste.</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Read the FreeRTOS source this week</div>
+        <div class="item">tasks.c — find xReadyTasksLists[], understand scheduler tick<span class="isub">The ready list is a sorted linked list. The scheduler always picks the head of the highest non-empty list.</span></div>
+        <div class="item">list.c — the doubly-linked list used for all RTOS objects<span class="isub">Everything in FreeRTOS — tasks, queues, timers — lives on these lists</span></div>
+      </div>
+    </div>
+    <div class="slabel">Daily exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Create 3 tasks at different priorities. Toggle a different GPIO in each. Observe preemption on oscilloscope.<span class="isub">Expected: highest priority task dominates. Lower priority tasks only run when higher yields.</span></div>
+      <div class="item"><span class="day">Tue</span>Read FreeRTOS source: list.c and tasks.c. Find the TCB struct definition. Draw its memory layout on paper.</div>
+      <div class="item"><span class="day">Wed</span>Configure configCHECK_FOR_STACK_OVERFLOW = 2. Deliberately overflow a stack. Write vApplicationStackOverflowHook() to log task name over UART before halting.</div>
+      <div class="item"><span class="day">Thu</span>Use uxTaskGetStackHighWaterMark() on all tasks. Size stacks correctly with 20% headroom. Document in comments above each xTaskCreate().</div>
+      <div class="item"><span class="day">Fri</span>Cooperative scheduling experiment: set configUSE_PREEMPTION = 0. Repeat Monday's test. Observe why preemptive is almost always correct for embedded.</div>
+      <div class="item"><span class="day">Sat</span>Scaffold the sensor fusion project: create 5 task stubs (IMU, Temp, Aggregator, UART_Report, Watchdog). Each toggles an LED. Verify all run.</div>
+    </div>
+  </div>
+
+  <!-- W2 -->
+  <div class="week-panel" id="w1">
+    <div class="week-header">
+      <h2 class="week-title">Week 2 — Queues and inter-task communication</h2>
+      <span class="badge badge-phase">IPC</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:25%"></div></div>
+    <div class="chips">
+      <span class="chip">queue internals</span><span class="chip">producer-consumer</span>
+      <span class="chip">blocking vs non-blocking</span><span class="chip">ISR-safe APIs</span>
+      <span class="chip">queue sets</span><span class="chip">backpressure</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">K C Wang Ch. 4–5: IPC theory, message passing, bounded buffer problem</div>
+        <div class="item">Amos Ch. 5–7: xQueueCreate, xQueueSend, xQueueReceive, queue sets</div>
+        <div class="item">White Ch. 1–3: system architecture — how data flows between layers</div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Critical API rules</div>
+        <div class="item">Never call xQueueSend() from an ISR — use xQueueSendFromISR()<span class="isub">Non-ISR versions acquire a scheduler lock — calling from ISR causes undefined behaviour</span></div>
+        <div class="item">Always check return value: pdTRUE vs errQUEUE_FULL<span class="isub">Dropped data is silent. Silent data loss in embedded = hard-to-reproduce bugs</span></div>
+        <div class="item">portMAX_DELAY blocks forever — only use when you can prove it won't deadlock<span class="isub">In most cases, use a finite timeout and handle the timeout case</span></div>
+      </div>
+    </div>
+    <div class="slabel">Sensor data struct — use throughout the project</div>
+<pre>
+typedef struct {
+    uint32_t timestamp_ms;   /* xTaskGetTickCount() at sample time */
+    float    x, y, z;        /* IMU axes or temperature (z unused) */
+    uint8_t  sensor_id;      /* 0=IMU, 1=Temp */
+    uint8_t  valid;          /* 1 if data is fresh */
+} SensorReading_t;
+
+/* Queue of structs — copy by value, not by pointer */
+/* Queue depth: enough to absorb worst-case producer burst */
+static QueueHandle_t g_imu_queue;
+static QueueHandle_t g_temp_queue;
+
+/* In IMU_Task: */
+SensorReading_t reading = { .timestamp_ms = xTaskGetTickCount(),
+                             .x = imu_x, .y = imu_y, .z = imu_z,
+                             .sensor_id = 0, .valid = 1 };
+xQueueSend(g_imu_queue, &amp;reading, pdMS_TO_TICKS(10));
+
+/* In Aggregator_Task: */
+SensorReading_t rx;
+if (xQueueReceive(g_imu_queue, &amp;rx, pdMS_TO_TICKS(100)) == pdTRUE) {
+    /* process rx */
+}
+</pre>
+    <div class="slabel">Daily exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Producer-consumer with queue depth 10. Produce faster than consume. Measure how long producer blocks when queue fills (DWT timestamp before/after xQueueSend).</div>
+      <div class="item"><span class="day">Tue</span>Send data from UART RX ISR to task via xQueueSendFromISR(). Understand portYIELD_FROM_ISR() — why context switch may be needed immediately after ISR.</div>
+      <div class="item"><span class="day">Wed</span>Queue of SensorReading_t structs. Connect IMU_Task → Aggregator_Task via queue.</div>
+      <div class="item"><span class="day">Thu</span>Queue set: Aggregator blocks on both IMU and Temp queues simultaneously with xQueueSelectFromSet().</div>
+      <div class="item"><span class="day">Fri</span>Stress test: produce at max rate. Add a drop counter to SensorReading_t. Log drop rate over UART.</div>
+      <div class="item"><span class="day">Sat</span>Measure latency: DWT timestamp in ISR, again when task receives. Document min/max/avg over 10,000 samples.</div>
+    </div>
+  </div>
+
+  <!-- W3 -->
+  <div class="week-panel" id="w2">
+    <div class="week-header">
+      <h2 class="week-title">Week 3 — Semaphores, mutexes, synchronisation bugs</h2>
+      <span class="badge badge-phase" style="border-color:#6e2020;background:#1a0707;color:var(--red)">Critical week</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:37%"></div></div>
+
+    <div class="alert" style="border-color:var(--orange);background:#1a0e07;margin-bottom:14px">
+      <div class="alert-title" style="color:var(--orange)">This is the most important week in Phase 2</div>
+      Priority inversion and deadlock are the two most dangerous bugs in RTOS development.
+      You must be able to reproduce them on demand, explain them precisely, and fix them
+      confidently. These come up in virtually every embedded systems interview.
+      Document everything — it becomes interview material.
+    </div>
+
+    <div class="chips">
+      <span class="chip">binary semaphore</span><span class="chip">counting semaphore</span>
+      <span class="chip">mutex vs semaphore</span><span class="chip">priority inheritance</span>
+      <span class="chip">priority inversion</span><span class="chip">deadlock</span><span class="chip">Coffman conditions</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Semaphore vs Mutex — know this cold</div>
+        <div class="item"><strong>Semaphore:</strong> signalling. One task/ISR gives, another waits. No ownership concept.<span class="isub">Use for: ISR→task sync, task→task sync, counting resources (N buffers available)</span></div>
+        <div class="item"><strong>Mutex:</strong> ownership. Taker must be giver. Enables priority inheritance.<span class="isub">Use for: shared resource protection between tasks. NEVER from ISR.</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">K C Wang Ch. 6: mutual exclusion theory, semaphore internals, deadlock (Coffman conditions)</div>
+        <div class="item">Amos Ch. 8–10: FreeRTOS semaphores, mutexes, priority inheritance<span class="isub">Read the FreeRTOS source for xSemaphoreTake — compare with xQueueReceive</span></div>
+      </div>
+    </div>
+
+    <div class="slabel">Debug scenario 1 — reproduce priority inversion</div>
+    <div class="card card-red">
+      <div class="item" style="color:var(--red)"><strong>Setup:</strong> 3 tasks — Low (P1), Medium (P2), High (P3). Low takes a binary semaphore and holds it while doing "work" (vTaskDelay). High tries to take the same semaphore and blocks. Medium has no semaphore involvement but preempts Low.</div>
+      <div class="item" style="color:var(--red)"><strong>Observe:</strong> High is blocked on semaphore held by Low. Medium preempts Low (Medium > Low priority). High starves. This is priority inversion — Medium effectively runs at higher priority than High.</div>
+      <div class="item" style="color:var(--red)"><strong>Measure:</strong> Toggle GPIO in High task when it runs. Measure on oscilloscope. High LED should be dark while Medium runs.</div>
+      <div class="item" style="color:var(--red)"><strong>Fix:</strong> Replace binary semaphore with xSemaphoreCreateMutex(). FreeRTOS priority inheritance temporarily raises Low to High's priority. Medium can no longer preempt it. Re-measure — High runs within microseconds of Low releasing.</div>
+    </div>
+
+    <div class="slabel">Debug scenario 2 — reproduce deadlock</div>
+    <div class="card card-red">
+      <div class="item" style="color:var(--red)"><strong>Setup:</strong> 2 tasks, 2 mutexes (A and B). Task1 takes A then B. Task2 takes B then A. Both tasks run.</div>
+      <div class="item" style="color:var(--red)"><strong>Observe:</strong> Both tasks block forever. CPU is idle. Watchdog (if present) resets the system.</div>
+      <div class="item" style="color:var(--red)"><strong>Fix option 1:</strong> Always acquire mutexes in the same global order (A then B) in all tasks.</div>
+      <div class="item" style="color:var(--red)"><strong>Fix option 2:</strong> Use xSemaphoreTake() with a timeout. If second mutex not acquired within timeout, release first and retry.</div>
+    </div>
+
+    <div class="slabel">Debug scenario 3 — ISR misuse</div>
+    <div class="card card-red">
+      <div class="item" style="color:var(--red)">Call xSemaphoreTake() (non-ISR version) from inside an interrupt handler. Observe HardFault or assert fire. This is one of the most common RTOS bugs in real codebases. Know why it fails and what to use instead (xSemaphoreGiveFromISR).</div>
+    </div>
+
+    <div class="slabel">Project — shared log buffer</div>
+    <div class="card">
+      <div class="item">Add a shared log buffer accessed by both Aggregator and UART_Report tasks. Without mutex: observe corrupt log entries on UART. With mutex: clean entries. Demonstrate both — take a screenshot of each. Document the difference.</div>
+    </div>
+  </div>
+
+  <!-- W4 -->
+  <div class="week-panel" id="w3">
+    <div class="week-header">
+      <h2 class="week-title">Week 4 — Timers, event groups, deferred ISR</h2>
+      <span class="badge badge-phase">Events</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:50%"></div></div>
+    <div class="chips">
+      <span class="chip">software timers</span><span class="chip">timer daemon task</span>
+      <span class="chip">event groups</span><span class="chip">task notifications</span>
+      <span class="chip">deferred ISR pattern</span><span class="chip">ISR latency</span><span class="chip">tickless idle</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Amos Ch. 11–13: software timers, event groups, task notifications</div>
+        <div class="item">White Ch. 4–6: interrupt design, latency budget, ISR length<span class="isub">White's rule: ISRs should read hardware and signal a task. Nothing more.</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Deferred ISR — the production pattern</div>
+        <div class="item"><strong>ISR (minimal):</strong> read hardware register, post to queue or give semaphore, exit. Under 1 microsecond.</div>
+        <div class="item"><strong>Worker task:</strong> blocks on queue/semaphore, does all processing at task context priority.</div>
+        <div class="item">This is how every well-written production RTOS driver is structured.</div>
+      </div>
+    </div>
+    <div class="slabel">Task notification — faster than semaphore</div>
+<pre>
+/* Giving from ISR — faster than xSemaphoreGiveFromISR */
+void EXTI0_IRQHandler(void) {
+    BaseType_t xHigherPriority = pdFALSE;
+    vTaskNotifyGiveFromISR(g_worker_task_handle, &amp;xHigherPriority);
+    portYIELD_FROM_ISR(xHigherPriority);
+}
+
+/* Taking in task — blocks until notification received */
+void Worker_Task(void *pv) {
+    while (1) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);  /* block */
+        /* do deferred work here */
+        Process_Sensor_Data();
+    }
+}
+</pre>
+    <div class="slabel">Daily exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Create one-shot and periodic software timers. Verify callback runs in timer daemon context (print task name in callback). Measure accuracy vs hardware timer — understand the 1-tick resolution limit.</div>
+      <div class="item"><span class="day">Tue</span>Event groups: IMU, Temp, and Mag tasks each set a bit when data ready. Aggregator waits for ALL 3 bits (xEventGroupWaitBits with waitForAll=pdTRUE).</div>
+      <div class="item"><span class="day">Wed</span>Replace a semaphore with task notifications. Measure CPU overhead difference using vTaskGetRunTimeStats().</div>
+      <div class="item"><span class="day">Thu</span>Full deferred ISR: UART RX interrupt posts raw bytes to queue. Parser task wakes and processes. Measure ISR exit time with GPIO toggle — target under 1 microsecond.</div>
+      <div class="item"><span class="day">Fri</span>Enable tickless idle. Measure idle current with a multimeter. Understand the wake-up latency trade-off.</div>
+      <div class="item"><span class="day">Sat</span>Add multi-task watchdog: each task sets a heartbeat bit. Watchdog task checks all bits every 100ms, kicks IWDG only if all set, clears flags.</div>
+    </div>
+  </div>
+
+  <!-- W5 -->
+  <div class="week-panel" id="w4">
+    <div class="week-header">
+      <h2 class="week-title">Week 5 — Memory management and DMA integration</h2>
+      <span class="badge badge-phase">Memory</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:62%"></div></div>
+    <div class="chips">
+      <span class="chip">heap schemes 1–5</span><span class="chip">fragmentation</span>
+      <span class="chip">static allocation</span><span class="chip">DMA + semaphore</span>
+      <span class="chip">double buffering</span><span class="chip">cache coherency</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">FreeRTOS heap schemes</div>
+        <div class="item"><strong>heap_1:</strong> alloc only, no free. Zero fragmentation.<span class="isub">Use when all objects allocated at startup and never freed</span></div>
+        <div class="item"><strong>heap_2:</strong> free supported, best-fit. Can fragment.<span class="isub">Avoid unless allocation sizes are all identical</span></div>
+        <div class="item"><strong>heap_3:</strong> wraps malloc/free from libc.</div>
+        <div class="item"><strong>heap_4:</strong> first-fit with coalescence. General purpose. Most common.<span class="isub">Reduces fragmentation vs heap_2. Use this as default.</span></div>
+        <div class="item"><strong>heap_5:</strong> like heap_4 but spans multiple memory regions (CCM + SRAM).</div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">DMA + RTOS pattern</div>
+        <div class="item">Start DMA transfer. Task blocks on semaphore.<span class="isub">Do NOT poll for DMA complete in a task — wastes CPU</span></div>
+        <div class="item">DMA complete ISR gives semaphore. Task wakes and processes buffer.</div>
+        <div class="item">Cortex-M7 D-cache: must invalidate cache after DMA RX, clean before DMA TX.<span class="isub">SCB_InvalidateDCache_by_Addr() / SCB_CleanDCache_by_Addr()</span></div>
+      </div>
+    </div>
+    <div class="slabel">Static allocation — the automotive-safe approach</div>
+<pre>
+/* Task: statically allocated stack and TCB */
+static StackType_t  s_imu_stack[256];
+static StaticTask_t s_imu_tcb;
+
+TaskHandle_t IMU_Task_Init(void) {
+    return xTaskCreateStatic(
+        IMU_Task_Fn,    /* function */
+        "IMU",          /* name */
+        256,            /* stack depth in words */
+        NULL,           /* parameter */
+        5,              /* priority */
+        s_imu_stack,    /* stack buffer */
+        &amp;s_imu_tcb      /* TCB buffer */
+    );
+}
+
+/* Queue: statically allocated */
+static uint8_t      s_q_storage[10 * sizeof(SensorReading_t)];
+static StaticQueue_t s_q_struct;
+
+QueueHandle_t q = xQueueCreateStatic(10, sizeof(SensorReading_t),
+                                      s_q_storage, &amp;s_q_struct);
+
+/* Verify zero heap usage: */
+/* configASSERT(xPortGetFreeHeapSize() == configTOTAL_HEAP_SIZE); */
+</pre>
+    <div class="slabel">Daily exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Switch between heap_1, heap_4, heap_5. Measure fragmentation after 1000 alloc/free cycles with xPortGetFreeHeapSize() and xPortGetMinimumEverFreeHeapSize().</div>
+      <div class="item"><span class="day">Tue</span>Convert all dynamic allocations to static. Verify xPortGetFreeHeapSize() equals configTOTAL_HEAP_SIZE at runtime — zero heap used.</div>
+      <div class="item"><span class="day">Wed</span>DMA UART TX: task prepares buffer, starts DMA, blocks on semaphore, DMA complete ISR gives semaphore. Measure throughput vs interrupt-driven TX.</div>
+      <div class="item"><span class="day">Thu</span>Double-buffered DMA RX: buffer A fills while task processes buffer B. Swap on half-transfer and transfer-complete interrupts. No gaps in continuous reception.</div>
+      <div class="item"><span class="day">Fri</span>Profile heap usage across all tasks. Add a telemetry command that reports stack high-water marks for every task.</div>
+    </div>
+  </div>
+
+  <!-- W6 -->
+  <div class="week-panel" id="w5">
+    <div class="week-header">
+      <h2 class="week-title">Week 6 — Ethernet + LwIP: build from scratch</h2>
+      <span class="badge badge-phase" style="border-color:#1a5c3a;background:#071a10;color:var(--accent)">Milestone</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:75%"></div></div>
+
+    <div class="alert" style="border-color:var(--yellow);background:#1a1500;margin-bottom:14px">
+      <div class="alert-title" style="color:var(--yellow)">No CubeMX templates — build it yourself</div>
+      You have debugged Ethernet and LwIP from the support side. This week you design
+      and build the full stack from scratch, without generated code scaffolding.
+      The constraint forces you to understand every layer. Keep Wireshark running all week.
+    </div>
+
+    <div class="chips">
+      <span class="chip">LwIP raw API</span><span class="chip">netconn API</span>
+      <span class="chip">socket API</span><span class="chip">PBUF management</span>
+      <span class="chip">TCP server</span><span class="chip">UDP broadcast</span><span class="chip">DHCP</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">LwIP API comparison</div>
+        <div class="item"><strong>Raw API:</strong> callback-based, no blocking, no OS. Most efficient.<span class="isub">Use for bare-metal or absolute minimum overhead</span></div>
+        <div class="item"><strong>Netconn:</strong> blocking calls, OS-aware. Simpler than raw.<span class="isub">Best choice when using FreeRTOS</span></div>
+        <div class="item"><strong>Socket:</strong> POSIX-like, most overhead. Familiar from Linux.<span class="isub">Use for porting from Linux or quick prototyping</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">White Ch. 8–10: networking in embedded systems, protocol layers</div>
+        <div class="item">LwIP documentation: lwip.fandom.com/wiki<span class="isub">Read the "PBUF" and "netconn API" pages carefully</span></div>
+        <div class="item">Study: ethernetif.c from ST (even if you're not using it directly)<span class="isub">Understanding the driver interface is how you debug it</span></div>
+      </div>
+    </div>
+    <div class="slabel">Daily exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Write the Ethernet DMA driver from scratch. Get ping working. Verify with Wireshark — you should see ARP requests and ICMP echo replies.</div>
+      <div class="item"><span class="day">Tue</span>TCP echo server using netconn API. Python test: send 10,000 packets at full speed, verify zero corruption or drops.</div>
+      <div class="item"><span class="day">Wed</span>Add DHCP client (dhcp_start). Verify IP assignment with Wireshark. Add link-local fallback if no DHCP server.</div>
+      <div class="item"><span class="day">Thu</span>UDP broadcast: every 1 second broadcast a discovery packet {device_name, ip, firmware_version}. Python listener prints discovered devices. This is a real embedded product pattern.</div>
+      <div class="item"><span class="day">Fri</span>Binary framed TCP protocol: [magic_byte][length_u16][payload][crc8]. Parser on STM32 side. Python sender. Replace JSON-over-UART sensor report with this protocol over TCP.</div>
+      <div class="item"><span class="day">Sat</span>24-hour stress test: continuous operation, log PBUF stats hourly. Fix any PBUF pool exhaustion (common LwIP memory leak).</div>
+    </div>
+    <div class="slabel">Portfolio milestone</div>
+    <div class="card card-green">
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Sensor fusion node transmitting IMU + temp data over TCP at 100ms intervals<span class="ms-sub">JSON or binary framed format — Python receiver logs to CSV</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>UDP broadcast discovery — Python finds device automatically on local network</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>24-hour stress test passed — no PBUF leaks, no task starvation, no resets</div></div>
+    </div>
+  </div>
+
+  <!-- W7 -->
+  <div class="week-panel" id="w6">
+    <div class="week-header">
+      <h2 class="week-title">Week 7 — Real-time analysis and SystemView profiling</h2>
+      <span class="badge badge-phase">Analysis</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:87%"></div></div>
+    <div class="chips">
+      <span class="chip">rate-monotonic analysis</span><span class="chip">schedulability</span>
+      <span class="chip">WCET</span><span class="chip">CPU utilisation</span>
+      <span class="chip">SystemView</span><span class="chip">jitter analysis</span>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">K C Wang Ch. 9–11: schedulability analysis, rate-monotonic scheduling, Liu &amp; Layland theorem</div>
+        <div class="item">White Ch. 7–9: performance analysis, profiling embedded systems</div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Rate-monotonic schedulability</div>
+        <div class="item">Liu &amp; Layland bound: for n tasks, RM schedulable if U ≤ n(2^(1/n) − 1)<span class="isub">For large n this approaches ln(2) ≈ 69%. Above this bound: not guaranteed schedulable under RM.</span></div>
+        <div class="item">U = sum of (WCET_i / Period_i) for all tasks<span class="isub">Measure WCET with DWT_CYCCNT — not with vTaskGetRunTimeStats (too coarse)</span></div>
+      </div>
+    </div>
+    <div class="slabel">Schedulability analysis — example for sensor fusion project</div>
+<pre>
+Task             Period    WCET     Priority   Utilisation
+---------------------------------------------------------
+Watchdog_Task    1ms       30us     6 (high)   3.0%
+IMU_Task         1ms       80us     5           8.0%
+Aggregator_Task  1ms       120us    4           12.0%
+Temp_Task        10ms      200us    4           2.0%
+UART_Report_Task 500ms     2ms      2           0.4%
+Ethernet_Task    -         -        3           event-driven
+---------------------------------------------------------
+Total utilisation: ~25.4%  →  well within 69% RM bound
+Schedulable: YES (with margin)
+</pre>
+    <div class="slabel">Daily exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Rate-monotonic analysis on paper for your sensor fusion project. Assign periods and WCET to each task. Calculate U. Verify schedulability.</div>
+      <div class="item"><span class="day">Tue</span>Measure WCET for each task using DWT_CYCCNT. Compare measured vs assumed in your RM analysis. Update the analysis if assumptions were wrong.</div>
+      <div class="item"><span class="day">Wed</span>Install Segger SystemView (free). Configure in FreeRTOSConfig.h. Record a 10-second trace. Find: longest ISR, most context switches/sec, task with worst jitter.</div>
+      <div class="item"><span class="day">Thu</span>Measure interrupt-to-task latency: timestamp at ISR entry and when task unblocks. Target under 50 microseconds. Document the distribution over 10,000 samples.</div>
+      <div class="item"><span class="day">Fri</span>Stress test: add a CPU-intensive medium-priority task. Observe starvation in SystemView. Fix with priority adjustment.</div>
+      <div class="item"><span class="day">Sat</span>Write a schedulability analysis document: task table, utilisation calculation, SystemView screenshot with annotations. Add to GitHub README.</div>
+    </div>
+  </div>
+
+  <!-- W8 -->
+  <div class="week-panel" id="w7">
+    <div class="week-header">
+      <h2 class="week-title">Week 8 — Hardening, fault handling, Phase 2 capstone</h2>
+      <span class="badge badge-phase" style="border-color:#1a5c3a;background:#071a10;color:var(--accent)">Capstone</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:100%"></div></div>
+    <div class="chips">
+      <span class="chip">HardFault handler</span><span class="chip">stack frame decoding</span>
+      <span class="chip">MPU configuration</span><span class="chip">fault registers</span>
+      <span class="chip">NVM fault log</span><span class="chip">integration testing</span>
+    </div>
+
+    <div class="slabel">HardFault handler — decode the exception frame</div>
+<pre>
+/* ARM Cortex-M exception frame pushed to stack on fault:
+   R0, R1, R2, R3, R12, LR, PC, xPSR (in that order)
+   The PC value tells you exactly where the fault occurred.       */
+
+/* Fault status registers — read immediately in handler */
+#define SCB_CFSR   (*((volatile uint32_t *)0xE000ED28))  /* Combined */
+#define SCB_HFSR   (*((volatile uint32_t *)0xE000ED2C))  /* HardFault */
+#define SCB_MMFAR  (*((volatile uint32_t *)0xE000ED34))  /* MemManage addr */
+#define SCB_BFAR   (*((volatile uint32_t *)0xE000ED38))  /* BusFault addr */
+
+typedef struct {
+    uint32_t r0, r1, r2, r3, r12;
+    uint32_t lr, pc, xpsr;
+} ExcFrame_t;
+
+void HardFault_Handler_C(ExcFrame_t *frame) {
+    /* Log to backup SRAM (survives reset) */
+    FAULT_LOG->pc   = frame->pc;
+    FAULT_LOG->lr   = frame->lr;
+    FAULT_LOG->cfsr = SCB_CFSR;
+    FAULT_LOG->hfsr = SCB_HFSR;
+    FAULT_LOG->valid = 0xDEADBEEF;
+
+    /* Log over UART if still functional */
+    LOG_ERROR("HardFault at PC=0x%08X LR=0x%08X CFSR=0x%08X",
+               frame->pc, frame->lr, SCB_CFSR);
+
+    /* Force reset via NVIC */
+    NVIC_SystemReset();
+}
+
+/* Assembly trampoline — switches to correct stack before calling C handler */
+__attribute__((naked)) void HardFault_Handler(void) {
+    __asm volatile (
+        "tst lr, #4         \n"
+        "ite eq             \n"
+        "mrseq r0, msp      \n"
+        "mrsne r0, psp      \n"
+        "b HardFault_Handler_C \n"
+    );
+}
+</pre>
+
+    <div class="slabel">Daily exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Write the HardFault handler above. Reproduce 3 faults deliberately: null pointer deref, stack overflow, divide by zero. Verify your handler catches and logs each one with correct PC value.</div>
+      <div class="item"><span class="day">Tue</span>Configure MPU: mark stack region as non-executable, add guard pages between task stacks. Verify MPU catches stack overflow before it corrupts adjacent memory.</div>
+      <div class="item"><span class="day">Wed</span>On next boot after fault: check FAULT_LOG->valid for 0xDEADBEEF. If present, log the saved fault info over UART, clear the log. Verify by deliberately faulting, observing reset, and reading the boot log.</div>
+      <div class="item"><span class="day">Thu</span>Python integration test suite: connect over TCP, send known command sequences, verify responses. At least 10 test cases covering normal operation and error conditions. Document pass/fail.</div>
+      <div class="item"><span class="day">Fri</span>Build in RELEASE (-O2). Fix any bugs that only appear with optimisation (missing volatile, UB). This is a real and important exercise.</div>
+      <div class="item"><span class="day">Sat</span>Record 2-minute demo video: SystemView trace alongside running hardware. Push final capstone to GitHub.</div>
+    </div>
+
+    <div class="slabel">Phase 2 capstone — deliverable checklist</div>
+    <div class="card card-green">
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>FreeRTOS sensor fusion node — 6 tasks, static allocation, RM-schedulable<span class="ms-sub">IMU + Temp + Aggregator + UART_Report + Ethernet + Watchdog</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>DMA-backed UART TX with double buffering</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>LwIP TCP server + UDP broadcast — Python test client included in repo</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>HardFault handler: register dump + fault survival across reset (backup SRAM log)</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Per-task watchdog with heartbeat tokens — safer than single-task watchdog kick</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>SystemView trace annotated and in README. Schedulability analysis documented.</div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Python integration test suite — 10+ automated test cases, pass/fail CI</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  <span>phase 2 of 4 · 8 weeks · 320 hrs</span>
+  <div style="display:flex;gap:20px">
+    <a href="phase1.html">← phase 1</a>
+    <a href="phase3.html">phase 3 →</a>
+  </div>
+</div>
+
+<script>
+function showWeek(n) {
+  document.querySelectorAll('.week-panel').forEach((p,i) => p.classList.toggle('active', i===n));
+  document.querySelectorAll('.wtab').forEach((b,i) => b.classList.toggle('active', i===n));
+}
+</script>
+</body>
+</html>

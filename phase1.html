@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phase 1 — Foundations | Embedded Training</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+  .phase-tag { color: var(--blue); }
+  .week-title { color: var(--blue); }
+  .prog-fill { background: var(--blue); }
+  .badge-phase { color: var(--blue); border-color: #2a4a6e; background: #0d1826; }
+  .ms-dot-phase { background: var(--blue); }
+  .wtab.active { border-color: var(--blue); color: var(--blue); }
+  .day { border-color: #2a4a6e; color: var(--blue); }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-left">
+    <a href="index.html">~/embedded-training</a>
+    <span class="sep">/</span>
+    <span class="current">phase-1</span>
+  </div>
+  <div class="topnav-right">
+    <a href="index.html" class="active">curriculum</a>
+    <a href="about.html">about</a>
+    <a href="blog.html">blog</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="phase-tag">// phase 01 of 04</div>
+  <h1 class="page-title">Foundations refresh</h1>
+  <p class="page-subtitle">
+    Rebuild embedded C from first principles. Layered architecture, HAL design,
+    state machines, memory management, and unit testing. Closes the gap between
+    "C that works" and "C you'd show in a code review."
+  </p>
+  <div class="meta-row">
+    <span class="meta-item"><strong>Duration:</strong> 6 weeks</span>
+    <span class="meta-item"><strong>Hours:</strong> ~240 hrs (40/week)</span>
+    <span class="meta-item"><strong>Schedule:</strong> Mon–Sat full time</span>
+    <span class="meta-item"><strong>Capstone:</strong> STM32 CLI system</span>
+  </div>
+</div>
+
+<div class="page-main">
+
+  <div class="slabel">// books for this phase</div>
+  <div class="card" style="margin-bottom:24px">
+    <div class="item"><strong>Modern C</strong> — Jens Gustedt<span class="isub">Language depth: type system, memory model, UB, idioms. Chapters 1–20 in order.</span></div>
+    <div class="item"><strong>Embedded Software Design</strong> — Jacob Beningo<span class="isub">Architecture: HAL design, modularity, state machines, testing. The "professional habits" book.</span></div>
+    <div class="item"><strong>Understanding and Using C Pointers</strong> — Richard Reese (finishing)<span class="isub">Complete any remaining chapters on function pointers and pointer arithmetic.</span></div>
+  </div>
+
+  <div class="slabel">// daily schedule template (mon–fri)</div>
+  <div class="card" style="margin-bottom:24px">
+    <div class="item">08:00 – 10:00 &nbsp;Book reading (Modern C or Beningo chapter)<span class="isub">Take notes on paper. Draw diagrams. Do every worked example.</span></div>
+    <div class="item">10:00 – 13:00 &nbsp;Coding exercises — implement chapter concepts on STM32<span class="isub">Type code by hand. No copy-paste from book examples.</span></div>
+    <div class="item">14:00 – 16:00 &nbsp;Weekly project work — layered driver or architecture task<span class="isub">This is where the week's reading becomes a real artifact.</span></div>
+    <div class="item">16:00 – 17:30 &nbsp;Review + documentation<span class="isub">Write up what you built, why it's designed that way, what you'd change.</span></div>
+    <div class="item">Saturday &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Weekly review: fix what's broken, push to GitHub, write a short technical summary</div>
+  </div>
+
+  <div class="slabel">// week-by-week</div>
+
+  <div class="week-tabs">
+    <button class="wtab active" onclick="showWeek(0)">Week 1</button>
+    <button class="wtab" onclick="showWeek(1)">Week 2</button>
+    <button class="wtab" onclick="showWeek(2)">Week 3</button>
+    <button class="wtab" onclick="showWeek(3)">Week 4</button>
+    <button class="wtab" onclick="showWeek(4)">Week 5</button>
+    <button class="wtab" onclick="showWeek(5)">Week 6</button>
+  </div>
+
+  <!-- WEEK 1 -->
+  <div class="week-panel active" id="w0">
+    <div class="week-header">
+      <h2 class="week-title">Week 1 — C language depth and memory model</h2>
+      <span class="badge badge-phase">Foundation</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:17%"></div></div>
+
+    <div class="chips">
+      <span class="chip">integer promotion</span><span class="chip">implicit conversions</span>
+      <span class="chip">pointer arithmetic</span><span class="chip">function pointers</span>
+      <span class="chip">volatile / const</span><span class="chip">UB traps</span>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Modern C Ch. 1–6: types, operators, control flow, functions<span class="isub">Focus: integer promotion rules, implicit conversions, signed overflow UB</span></div>
+        <div class="item">Finish Understanding C Pointers: function pointers, pointer arithmetic<span class="isub">These appear constantly in driver dispatch tables and HAL code</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Environment setup (do first)</div>
+        <div class="item">Build from CLI: CMake + arm-none-eabi-gcc, no IDE<span class="isub">Knowing how to build without an IDE forces real understanding of the toolchain</span></div>
+        <div class="item">Set up clangd LSP for code navigation<span class="isub">generate_compile_commands = ON in CMakeLists.txt</span></div>
+        <div class="item">Configure OpenOCD for flash + debug via GDB<span class="isub">No GUI debugger — raw GDB commands this week</span></div>
+      </div>
+    </div>
+
+    <div class="slabel">Daily coding exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Rewrite memcpy, memset, strcpy from scratch without stdlib. Verify against originals.<span class="isub">Forces correct pointer arithmetic and off-by-one awareness</span></div>
+      <div class="item"><span class="day">Tue</span>Practice volatile and const correctness: write a GPIO register access layer using volatile uint32_t pointers. No HAL library.<span class="isub">Every peripheral register pointer should be volatile. Understand why.</span></div>
+      <div class="item"><span class="day">Wed</span>Write a function pointer dispatch table: define 5 command handler functions, store in an array, call by index.<span class="isub">This exact pattern is used in protocol parsers and bootloaders</span></div>
+      <div class="item"><span class="day">Thu</span>Integer promotion traps: write 3 examples where implicit conversion causes a bug. Fix each one with explicit casts.<span class="isub">Classic: uint8_t a=200, b=200; uint8_t sum = a+b; — what is sum?</span></div>
+      <div class="item"><span class="day">Fri</span>Undefined behaviour exploration: signed overflow, null pointer deref, out-of-bounds. Compile at -O0 then -O2. Document the difference.<span class="isub">This will surprise you. UB that "works" at -O0 can silently break at -O2.</span></div>
+      <div class="item"><span class="day">Sat</span>Set up Git repo. Push all week's code with a structured README. Document what each exercise taught you.</div>
+    </div>
+  </div>
+
+  <!-- WEEK 2 -->
+  <div class="week-panel" id="w1">
+    <div class="week-header">
+      <h2 class="week-title">Week 2 — Structs, alignment, bit manipulation</h2>
+      <span class="badge badge-phase">Data Structures</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:33%"></div></div>
+
+    <div class="chips">
+      <span class="chip">struct padding</span><span class="chip">packed attribute</span>
+      <span class="chip">register maps</span><span class="chip">bit manipulation</span>
+      <span class="chip">circular buffer</span><span class="chip">union type punning</span>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Modern C Ch. 7–10: structs, unions, typedef, memory layout<span class="isub">Focus: struct padding, alignment requirements, __attribute__((packed))</span></div>
+        <div class="item">Beningo Ch. 1–3: software engineering principles for embedded<span class="isub">SOLID applied to C, cohesion, coupling, single responsibility</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Key concepts</div>
+        <div class="item">Struct padding: compiler inserts padding to align members to their natural alignment. sizeof(struct) may surprise you.<span class="isub">Use __attribute__((packed)) only when absolutely necessary — creates unaligned access faults on strict-alignment architectures</span></div>
+        <div class="item">Register map as packed struct: maps C struct fields directly to hardware register bits.<span class="isub">Verify with objdump that the struct sits at the correct base address</span></div>
+      </div>
+    </div>
+
+    <div class="slabel">Daily coding exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Implement a register map as a packed struct for UART. Compare with raw pointer offset access. Verify both produce identical machine code with objdump.<span class="isub">Use the STM32 reference manual to map every field</span></div>
+      <div class="item"><span class="day">Tue</span>Bit manipulation drills. Implement SET_BIT, CLEAR_BIT, TOGGLE_BIT, READ_BIT macros. No magic numbers anywhere. Apply to GPIO register control.<span class="isub">These macros go in every professional embedded codebase</span></div>
+      <div class="item"><span class="day">Wed–Thu</span>Build a circular (ring) buffer: fixed size (power of two), push, pop, is_full, is_empty. Lock-free for single producer / single consumer.<span class="isub">You will reuse this in Phase 2 (UART DMA) and Phase 3 (telemetry)</span></div>
+      <div class="item"><span class="day">Fri</span>UART interrupt-driven driver using your ring buffer for both TX and RX. No polling.<span class="isub">TX: task writes to ring buffer, TXEIE interrupt drains it. RX: RXNEIE fills ring buffer, task reads it.</span></div>
+      <div class="item"><span class="day">Sat</span>Verify UART driver with a Python script (pyserial): send known patterns, verify echo. Fix any corruption.</div>
+    </div>
+
+    <div class="slabel">Circular buffer — reference implementation</div>
+<pre>
+/* Power-of-two size for bitmask wrap (no division) */
+#define RING_SIZE   256u          /* must be power of 2 */
+#define RING_MASK   (RING_SIZE - 1u)
+
+typedef struct {
+    uint8_t  buf[RING_SIZE];
+    volatile uint32_t head;       /* written by producer (ISR) */
+    volatile uint32_t tail;       /* written by consumer (task) */
+} RingBuf_t;
+
+/* Single producer / single consumer — lock-free on Cortex-M */
+static inline bool rb_push(RingBuf_t *rb, uint8_t byte) {
+    uint32_t next = (rb->head + 1u) &amp; RING_MASK;
+    if (next == rb->tail) return false;   /* full */
+    rb->buf[rb->head] = byte;
+    rb->head = next;
+    return true;
+}
+
+static inline bool rb_pop(RingBuf_t *rb, uint8_t *out) {
+    if (rb->head == rb->tail) return false;  /* empty */
+    *out = rb->buf[rb->tail];
+    rb->tail = (rb->tail + 1u) &amp; RING_MASK;
+    return true;
+}
+
+static inline uint32_t rb_count(const RingBuf_t *rb) {
+    return (rb->head - rb->tail) &amp; RING_MASK;
+}
+</pre>
+  </div>
+
+  <!-- WEEK 3 -->
+  <div class="week-panel" id="w2">
+    <div class="week-header">
+      <h2 class="week-title">Week 3 — Layered architecture and HAL design</h2>
+      <span class="badge badge-phase">Architecture</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:50%"></div></div>
+
+    <div class="chips">
+      <span class="chip">HAL pattern</span><span class="chip">abstraction layers</span>
+      <span class="chip">portability</span><span class="chip">error handling</span>
+      <span class="chip">API design</span><span class="chip">driver architecture</span>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Beningo Ch. 4–6: HAL design, abstraction layers, portability patterns</div>
+        <div class="item">Modern C Ch. 11–13: pointers to functions, standard library internals</div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">The three-layer driver model</div>
+        <div class="item"><strong>Layer 1 — Hardware Abstraction (HAL):</strong> direct register access, MCU-specific.<span class="isub">Changing MCU = rewrite only this layer</span></div>
+        <div class="item"><strong>Layer 2 — Driver logic:</strong> protocol, timing, state. MCU-independent.<span class="isub">UART framing, SPI clock polarity handling</span></div>
+        <div class="item"><strong>Layer 3 — Application API:</strong> the public interface your application calls.<span class="isub">UART_Write(buf, len). Never exposes registers.</span></div>
+      </div>
+    </div>
+
+    <div class="slabel">Daily coding exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon–Tue</span>Refactor your Week 2 UART driver into 3 explicit layers. The HAL layer is the only file that touches registers. Verify by compiling driver logic tests on your host (no MCU).</div>
+      <div class="item"><span class="day">Wed</span>Write a GPIO HAL that could be ported to a different MCU by changing only one file. Test by swapping a stub implementation.<span class="isub">GPIO_SetPin(port, pin), GPIO_ClearPin, GPIO_ReadPin — no register names leak upward</span></div>
+      <div class="item"><span class="day">Thu</span>Design and implement a proper error handling system. Define error_t typedef (int32_t or enum), error code list, propagation pattern (return error, never ignore).<span class="isub">MISRA Rule 17.7: the return value of a non-void function shall be used. Enforce this now.</span></div>
+      <div class="item"><span class="day">Fri</span>Add logging abstraction: LOG_DEBUG, LOG_INFO, LOG_ERROR macros that compile away in RELEASE builds. Implement over UART.</div>
+      <div class="item"><span class="day">Sat</span>GitHub milestone: push UART driver with full 3-layer architecture and a README architecture diagram. This is Portfolio Project #1 start.</div>
+    </div>
+
+    <div class="slabel">Error handling pattern</div>
+<pre>
+typedef int32_t error_t;
+
+#define ERR_OK           (0)
+#define ERR_INVALID_ARG  (-1)
+#define ERR_TIMEOUT      (-2)
+#define ERR_BUSY         (-3)
+#define ERR_OVERFLOW     (-4)
+
+/* Every function that can fail returns error_t.
+   Callers must check the return value — always. */
+error_t UART_Write(const uint8_t *buf, uint16_t len) {
+    if (buf == NULL || len == 0u) {
+        return ERR_INVALID_ARG;
+    }
+    /* ... implementation ... */
+    return ERR_OK;
+}
+
+/* Usage — never ignore: */
+error_t err = UART_Write(data, len);
+if (err != ERR_OK) {
+    LOG_ERROR("UART write failed: %d", err);
+    return err;   /* propagate up */
+}
+</pre>
+  </div>
+
+  <!-- WEEK 4 -->
+  <div class="week-panel" id="w3">
+    <div class="week-header">
+      <h2 class="week-title">Week 4 — State machines and design patterns</h2>
+      <span class="badge badge-phase">Patterns</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:67%"></div></div>
+
+    <div class="chips">
+      <span class="chip">finite state machine</span><span class="chip">table-driven FSM</span>
+      <span class="chip">function-pointer FSM</span><span class="chip">entry/exit actions</span>
+      <span class="chip">protocol parser</span><span class="chip">defensive coding</span>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Beningo Ch. 7–9: state machines, design patterns in embedded C</div>
+        <div class="item">Modern C Ch. 14–16: defensive coding, assertions, static analysis mindset</div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Two FSM implementations to master</div>
+        <div class="item"><strong>Table-driven:</strong> 2D array of [state][event] → next_state + action. O(1) lookup.<span class="isub">Best for simple FSMs. Easy to visualise. Hard to add complex guard conditions.</span></div>
+        <div class="item"><strong>Function-pointer:</strong> each state is a function. Events are parameters.<span class="isub">Best for complex FSMs with guards. More flexible. More code.</span></div>
+      </div>
+    </div>
+
+    <div class="slabel">Table-driven FSM — reference implementation</div>
+<pre>
+typedef enum { ST_IDLE, ST_RECEIVING, ST_PROCESSING, ST_ERROR, ST_COUNT } State_t;
+typedef enum { EV_START, EV_BYTE, EV_END, EV_TIMEOUT, EV_COUNT } Event_t;
+
+typedef void (*ActionFn_t)(void);
+
+typedef struct {
+    State_t   next_state;
+    ActionFn_t action;
+} Transition_t;
+
+/* Transition table: [current_state][event] */
+static const Transition_t FSM_TABLE[ST_COUNT][EV_COUNT] = {
+    /*            EV_START                EV_BYTE                 EV_END                  EV_TIMEOUT         */
+    [ST_IDLE]     = {{ST_RECEIVING, on_start}, {ST_IDLE, NULL},     {ST_IDLE, NULL},        {ST_IDLE, NULL}},
+    [ST_RECEIVING]= {{ST_IDLE, on_error},      {ST_RECEIVING,on_byte},{ST_PROCESSING,on_end},{ST_ERROR,on_timeout}},
+    [ST_PROCESSING]={{ST_IDLE, on_error},      {ST_IDLE, on_error},  {ST_IDLE, on_done},     {ST_ERROR,on_timeout}},
+    [ST_ERROR]    = {{ST_IDLE, on_reset},      {ST_ERROR, NULL},     {ST_IDLE, on_reset},    {ST_ERROR, NULL}},
+};
+
+static State_t g_state = ST_IDLE;
+
+void FSM_Dispatch(Event_t event) {
+    const Transition_t *t = &amp;FSM_TABLE[g_state][event];
+    if (t->action != NULL) {
+        t->action();
+    }
+    g_state = t->next_state;
+}
+</pre>
+
+    <div class="slabel">Daily coding exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon–Tue</span>Implement both FSM variants for a simple packet protocol: IDLE → RECEIVING → PROCESSING → IDLE. States driven by UART bytes.</div>
+      <div class="item"><span class="day">Wed</span>Build a UART command-line interface: receive ASCII commands, parse with your FSM, dispatch to handlers via function pointer table.<span class="isub">Commands: "led on", "led off", "status". Parser handles unknown commands gracefully.</span></div>
+      <div class="item"><span class="day">Thu</span>Add assertions everywhere: ASSERT(ptr != NULL), ASSERT(len &lt;= MAX). Configure assert to log + halt in DEBUG, compile away in RELEASE.</div>
+      <div class="item"><span class="day">Fri</span>Add defensive input validation to every public API function. Test with malformed inputs: NULL pointers, zero lengths, out-of-range values.</div>
+      <div class="item"><span class="day">Sat</span>Push CLI system to GitHub with a README that includes the FSM state diagram (draw it in ASCII art or draw.io).</div>
+    </div>
+  </div>
+
+  <!-- WEEK 5 -->
+  <div class="week-panel" id="w4">
+    <div class="week-header">
+      <h2 class="week-title">Week 5 — Memory management and toolchain mastery</h2>
+      <span class="badge badge-phase">Memory</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:83%"></div></div>
+
+    <div class="chips">
+      <span class="chip">linker script</span><span class="chip">.text .data .bss</span>
+      <span class="chip">static allocation</span><span class="chip">memory pool</span>
+      <span class="chip">objdump / nm</span><span class="chip">startup code</span>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Modern C Ch. 17–20: dynamic memory, UB, compilation model<span class="isub">Focus: why malloc is dangerous in embedded and static allocation alternatives</span></div>
+        <div class="item">Beningo Ch. 10–12: startup code, linker scripts, memory sections</div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Memory sections to understand</div>
+        <div class="item"><strong>.text</strong> — executable code, stored in flash</div>
+        <div class="item"><strong>.rodata</strong> — read-only data (const globals), stored in flash</div>
+        <div class="item"><strong>.data</strong> — initialised globals, copied from flash to RAM at startup</div>
+        <div class="item"><strong>.bss</strong> — zero-initialised globals, zeroed at startup</div>
+        <div class="item"><strong>.stack</strong> — grows downward, size set in linker script</div>
+      </div>
+    </div>
+
+    <div class="slabel">Static memory pool — reference implementation</div>
+<pre>
+#define POOL_BLOCK_SIZE   64u
+#define POOL_BLOCK_COUNT  16u
+
+typedef struct {
+    uint8_t  data[POOL_BLOCK_SIZE];
+    bool     in_use;
+} Block_t;
+
+static Block_t s_pool[POOL_BLOCK_COUNT];   /* lives in .bss */
+
+void* Pool_Alloc(void) {
+    for (uint32_t i = 0; i &lt; POOL_BLOCK_COUNT; i++) {
+        if (!s_pool[i].in_use) {
+            s_pool[i].in_use = true;
+            return s_pool[i].data;
+        }
+    }
+    return NULL;   /* pool exhausted — never hang, return NULL */
+}
+
+void Pool_Free(void *ptr) {
+    if (ptr == NULL) return;
+    Block_t *b = (Block_t *)((uint8_t *)ptr - offsetof(Block_t, data));
+    ASSERT(b >= s_pool &amp;&amp; b &lt; s_pool + POOL_BLOCK_COUNT);
+    b->in_use = false;
+}
+</pre>
+
+    <div class="slabel">Daily coding exercises</div>
+    <div class="card">
+      <div class="item"><span class="day">Mon</span>Read and annotate your STM32 linker script. Locate every section. Understand why .data initialisation happens in the startup assembly.</div>
+      <div class="item"><span class="day">Tue</span>Use objdump -h to print section sizes. Use nm to list all symbols with sizes. Find where your largest variables live. Find any unexpected bloat.</div>
+      <div class="item"><span class="day">Wed–Thu</span>Implement the static memory pool above. Add to your CLI project: command receive buffers come from the pool, released after processing.</div>
+      <div class="item"><span class="day">Fri</span>Add memory usage reporting to the CLI: a "mem" command that prints pool usage (blocks used/total) and stack watermark (fill stack with known pattern at startup, scan for pattern at runtime).</div>
+      <div class="item"><span class="day">Sat</span>Verify that your entire project compiles with zero dynamic memory calls: grep for malloc, calloc, realloc, free. There should be none.</div>
+    </div>
+  </div>
+
+  <!-- WEEK 6 -->
+  <div class="week-panel" id="w5">
+    <div class="week-header">
+      <h2 class="week-title">Week 6 — Unit testing and Phase 1 capstone</h2>
+      <span class="badge badge-phase">Capstone</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-fill" style="width:100%"></div></div>
+
+    <div class="chips">
+      <span class="chip">Unity test framework</span><span class="chip">CMock</span>
+      <span class="chip">Ceedling</span><span class="chip">mocking hardware</span>
+      <span class="chip">host-side testing</span><span class="chip">branch coverage</span>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="slabel" style="margin-top:0">Reading</div>
+        <div class="item">Beningo Ch. 13–15: unit testing in embedded C, mocking hardware, testable design</div>
+        <div class="item">Ceedling + Unity documentation: ceedling.io<span class="isub">Read the getting-started guide before touching any test code</span></div>
+      </div>
+      <div class="card">
+        <div class="slabel" style="margin-top:0">What to test this week</div>
+        <div class="item">Ring buffer: push/pop, full/empty edge cases, wrap-around<span class="isub">Target: 100% branch coverage. This is pure algorithmic — no excuses.</span></div>
+        <div class="item">FSM: every state/event transition. Invalid transitions handled.<span class="isub">Create a test for each cell in your transition table.</span></div>
+        <div class="item">Memory pool: alloc, free, double-free safety, exhaustion handling</div>
+        <div class="item">Command parser: valid commands, unknown commands, malformed input</div>
+      </div>
+    </div>
+
+    <div class="slabel">Unity test example — ring buffer</div>
+<pre>
+/* test/test_ring_buffer.c */
+#include "unity.h"
+#include "ring_buffer.h"
+
+static RingBuf_t rb;
+
+void setUp(void)    { rb_init(&amp;rb); }
+void tearDown(void) { }
+
+void test_RingBuf_InitiallyEmpty(void) {
+    TEST_ASSERT_TRUE(rb_empty(&amp;rb));
+    TEST_ASSERT_FALSE(rb_full(&amp;rb));
+}
+
+void test_RingBuf_PushPop_SingleByte(void) {
+    TEST_ASSERT_TRUE(rb_push(&amp;rb, 0xAB));
+    uint8_t out = 0;
+    TEST_ASSERT_TRUE(rb_pop(&amp;rb, &amp;out));
+    TEST_ASSERT_EQUAL_HEX8(0xAB, out);
+    TEST_ASSERT_TRUE(rb_empty(&amp;rb));
+}
+
+void test_RingBuf_PushOnFull_ReturnsFalse(void) {
+    for (uint32_t i = 0; i &lt; RING_SIZE - 1; i++) {
+        TEST_ASSERT_TRUE(rb_push(&amp;rb, (uint8_t)i));
+    }
+    TEST_ASSERT_TRUE(rb_full(&amp;rb));
+    TEST_ASSERT_FALSE(rb_push(&amp;rb, 0xFF));  /* must fail */
+}
+
+void test_RingBuf_WrapAround_DataIntegrity(void) {
+    /* Fill, drain halfway, fill again — verify wrap-around is correct */
+    uint8_t in, out;
+    for (uint8_t i = 0; i &lt; 128; i++) rb_push(&amp;rb, i);
+    for (uint8_t i = 0; i &lt; 128; i++) rb_pop(&amp;rb, &amp;out);
+    for (uint8_t i = 0; i &lt; 100; i++) rb_push(&amp;rb, i);
+    for (uint8_t i = 0; i &lt; 100; i++) {
+        rb_pop(&amp;rb, &amp;out);
+        TEST_ASSERT_EQUAL_UINT8(i, out);
+    }
+}
+</pre>
+
+    <div class="slabel">Phase 1 capstone — deliverable checklist</div>
+    <div class="card card-green">
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Layered UART driver: 3 explicit layers (HAL / driver / API), interrupt-driven, ring-buffered TX and RX<span class="ms-sub">Verified by Python pyserial test script</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Reusable FSM framework: table-driven and function-pointer variants. Used in command parser.<span class="ms-sub">State diagram in README</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Static memory pool: ISR-safe alloc/free, exhaustion handling, usage reporting<span class="ms-sub">Used for command receive buffers</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>CLI system: ASCII command interface over UART, function pointer dispatch table, error handling<span class="ms-sub">At least 5 commands. "help" command lists all.</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>Unit tests: Unity + Ceedling, ≥90% branch coverage on ring buffer / FSM / memory pool<span class="ms-sub">Tests run on host (no MCU needed). CI badge in README.</span></div></div>
+      <div class="milestone"><div class="ms-dot ms-dot-phase"></div><div>GitHub repo: architecture diagram, build instructions, test results in README<span class="ms-sub">This is Portfolio Project #1</span></div></div>
+    </div>
+  </div>
+
+</div><!-- page-main -->
+
+<div class="page-footer">
+  <span>phase 1 of 4 · 6 weeks · 240 hrs</span>
+  <div style="display:flex;gap:20px">
+    <a href="index.html">← index</a>
+    <a href="phase2.html">phase 2 →</a>
+  </div>
+</div>
+
+<script>
+function showWeek(n) {
+  document.querySelectorAll('.week-panel').forEach((p,i) => p.classList.toggle('active', i===n));
+  document.querySelectorAll('.wtab').forEach((b,i) => b.classList.toggle('active', i===n));
+}
+</script>
+</body>
+</html>
